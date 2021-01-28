@@ -1,0 +1,30 @@
+.tasks {
+  &__container {
+    @include container();
+
+    &__btn {
+      display: flex;
+      width: 60%;
+      padding-bottom: 15px;
+    }
+
+    &__table {
+      width: 60%;
+      .tableLine__name {
+        width: 35%;
+      }
+      .tableLine__buttons {
+        width: 34%;
+      }
+    }
+    &__nav {
+      width: 60%;
+      .tableNav__nav__name {
+        width: 35%;
+      }
+      .tableNav__nav__btns {
+        width: 34%;
+      }
+    }
+  }
+}

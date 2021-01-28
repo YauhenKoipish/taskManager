@@ -1,0 +1,56 @@
+.tableNav {
+  &__nav {
+    @include nav();
+
+    &-elem {
+      @include nav-elem();
+    }
+
+    //member
+    &__number {
+      width: 5%;
+    }
+    &__name {
+      width: 17%;
+    }
+
+    &__direction {
+      width: 10%;
+    }
+    &__education {
+      width: 10%;
+    }
+    &__start {
+      width: 13%;
+    }
+    &__age {
+      width: 10%;
+    }
+    &__btns {
+      width: 35%;
+      border: none;
+    }
+
+    //progress
+    &__note {
+      width: 45%;
+    }
+    &__date {
+      width: 25%;
+    }
+
+    //tasks
+    &__deadLine {
+      width: 13%;
+    }
+    &__status {
+      width: 12%;
+    }
+    &__btnTask {
+      width: 20%;
+    }
+    &__btnMark {
+      width: 20%;
+    }
+  }
+}

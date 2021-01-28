@@ -1,0 +1,33 @@
+.btn {
+  border: none;
+  width: 120px;
+  height: 35px;
+  border-radius: 8px;
+  color: white;
+  background-color: $blue;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  outline: none;
+  text-decoration: none;
+  cursor: pointer;
+
+  &-green {
+    background-color: $green;
+  }
+  &-red {
+    background-color: $red;
+  }
+  &-white {
+    background-color: white;
+    border: 1px solid black;
+    color: black;
+  }
+
+  &-line {
+    width: 100px;
+    height: 30px;
+    margin: 0 10px;
+    flex: 0 30%;
+  }
+}

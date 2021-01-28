@@ -1,0 +1,115 @@
+body {
+  margin: 0;
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans',
+    'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+#root,
+.wrapper {
+  height: 100%;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.wrapper {
+  .loader {
+    padding-top: 50px;
+  }
+}
+
+//colors
+$blue: #3c97ff;
+$gray: #cccccc;
+$green: rgb(48, 201, 43);
+$red: rgb(223, 0, 0);
+
+@mixin flex-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin flex-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+@mixin nav {
+  @include flex-row();
+  background-color: $blue;
+  border: 1px solid $gray;
+  color: white;
+  height: 40px;
+}
+
+@mixin nav_elem {
+  @include flex-row();
+  height: 100%;
+  border-right: 1px solid $gray;
+}
+
+@mixin container {
+  @include flex-column();
+  min-height: 100%;
+  padding-bottom: 80px;
+  justify-content: flex-start;
+}
+
+.form {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.26);
+  z-index: 1;
+  top: 0px;
+  left: 0;
+  @include flex-column();
+
+  &__container {
+    position: relative;
+    background-color: white;
+    width: 600px;
+    height: 70vh;
+    border: 1px solid black;
+    padding: 40px 30px;
+    overflow: auto;
+
+    &__title {
+      font-size: 32px;
+      font-weight: 700;
+      padding-bottom: 10px;
+    }
+  }
+}
+
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import './components/TableLine/style/TableLine.scss';
+@import './components/Loader/style/loader.scss';
+@import './components/TableNav/style/tableNav.scss';
+@import './components/Footer/style/footer.scss';
+@import './components/Header/style/header.scss';
+@import './components/Forms/style/form.scss';
+@import './components/SideBar/style/sideBar.scss';
+@import './components/EmptyData/style/emptyData.scss';
+@import './components/Buttons/Button/style/button.scss';
+@import './pages/style/memberProgress.scss';
+@import './pages/style/MemberTasks.scss';
+@import './pages/style/members.scss';
+@import './pages/style/tasks.scss';
+@import './pages/style/taskTracks.scss';
+@import './pages/style/login.scss';

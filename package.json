@@ -1,0 +1,162 @@
+{
+  "name": "dims-cra",
+  "version": "1.0.2",
+  "description": "DIMS template bootstrapped with CRA app",
+  "main": "src/index.jsx",
+  "keywords": [
+    "template",
+    "cra",
+    "create-react-app"
+  ],
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "test:watch": "yarn test --watchAll",
+    "test:ci": "set CI=true && yarn run test",
+    "test:coverage": "yarn test --coverage",
+    "test:coverage:ci": "set CI=true && yarn test:coverage",
+    "test:coverage:ci:codecov": "yarn test:coverage:ci && codecov",
+    "format": "prettier --write \"src/**/*.+(js|jsx|json|css|scss|md)\"",
+    "lint": "eslint src/**",
+    "lint:fix": "eslint --fix src/**",
+    "clean": "rm -rf node_modules coverage build",
+    "clean:coverage": "rm -rf coverage",
+    "cm": "cz"
+  },
+  "eslintConfig": {
+    "extends": [
+      "airbnb",
+      "prettier",
+      "prettier/react",
+      "react-app",
+      "react-app/jest"
+    ],
+    "plugins": [
+      "react",
+      "prettier"
+    ],
+    "rules": {
+      "prettier/prettier": [
+        "warn",
+        {
+          "endOfLine": "auto"
+        }
+      ],
+      "react/state-in-constructor": 0,
+      "react/jsx-props-no-spreading": "off",
+      "import/prefer-default-export": "off",
+      "react/jsx-uses-react": "off",
+      "react/react-in-jsx-scope": "off",
+      "no-console": "off",
+      "no-use-before-define": 0,
+      "no-param-reassign": 1,
+      "curly": "warn"
+    }
+  },
+  "eslintIgnore": [
+    "node_modules",
+    "build/*"
+  ],
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "collectCoverageFrom": [
+      "src/**/*.{js,jsx}",
+      "!<rootDir>/src/index.jsx",
+      "!<rootDir>/src/reportWebVitals.js",
+      "!<rootDir>/src/shared/**/*.{js,jsx}"
+    ],
+    "testMatch": [
+      "**/src/**/*.test.+(js|jsx)"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "functions": 50,
+        "lines": 50,
+        "statements": 50,
+        "branches": 50
+      }
+    }
+  },
+  "dependencies": {
+    "@testing-library/jest-dom": "5.11.4",
+    "@testing-library/react": "11.1.0",
+    "@testing-library/user-event": "12.1.10",
+    "bootstrap": "^4.6.0",
+    "eslint-plugin-flowtype": "^5.2.0",
+    "eslint-plugin-testing-library": "^3.10.1",
+    "firebase": "^8.2.1",
+    "install": "^0.13.0",
+    "node-sass": "^4.14.1",
+    "prop-types": "15.7.2",
+    "react": "^17.0.1",
+    "react-bootstrap": "^1.4.3",
+    "react-dom": "^17.0.1",
+    "react-router": "^5.2.0",
+    "react-router-dom": "^5.2.0",
+    "react-scripts": "4.0.1",
+    "reactstrap": "^8.8.1",
+    "web-vitals": "0.2.4"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "11.0.0",
+    "@commitlint/config-conventional": "11.0.0",
+    "@commitlint/prompt": "11.0.0",
+    "@typescript-eslint/eslint-plugin": "4.9.1",
+    "@typescript-eslint/parser": "4.9.1",
+    "babel-eslint": "10.1.0",
+    "codecov": "3.8.1",
+    "commitizen": "4.2.2",
+    "cz-conventional-changelog": "3.3.0",
+    "eslint": "7.15.0",
+    "eslint-config-airbnb": "18.2.1",
+    "eslint-config-prettier": "7.0.0",
+    "eslint-config-react-app": "6.0.0",
+    "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-jest": "24.1.3",
+    "eslint-plugin-jsx-a11y": "6.4.1",
+    "eslint-plugin-prettier": "3.2.0",
+    "eslint-plugin-react": "7.21.5",
+    "eslint-plugin-react-hooks": "4.2.0",
+    "husky": "4.3.0",
+    "lint-staged": "10.5.1",
+    "prettier": "2.2.1",
+    "typescript": "4.1.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dev-incubator/DIMS-cra.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Dev-incubator/DIMS-cra/issues"
+  },
+  "release": {
+    "branches": "main"
+  },
+  "author": {
+    "name": "Maxim Shchutsky",
+    "email": "maximuzz@yandex.ru"
+  },
+  "license": "MIT",
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  }
+}

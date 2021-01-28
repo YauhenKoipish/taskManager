@@ -1,0 +1,48 @@
+language: node_js
+node_js:
+  - stable
+  - lts/*
+os:
+  - linux
+# rebuild the node_modules directory only if the yarn.lock changes
+cache:
+  yarn: true
+  directories:
+    - node_modules
+
+branches:
+  - main
+  - master
+  - dev
+
+notifications:
+  email:
+    recipients:
+      - hincubator@gmail.com
+    on_success: change
+    on_failure: always
+
+jobs:
+  include:
+    - stage: install dependeincies
+      install: yarn --frozen-lockfile
+      skip_cleanup: true
+    - stage: test
+      script: yarn test:coverage:ci:codecov
+      skip_cleanup: true
+    - stage: release
+      before_deploy:
+        - yarn add global netlify-cli
+        - yarn build
+      deploy:
+        provider: script
+        edge: true
+        skip_cleanup: true
+        script:
+          - netlify deploy --prod --dir=build
+          - npx semantic-release
+        on:
+          branch: main
+
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

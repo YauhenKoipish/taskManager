@@ -1,0 +1,39 @@
+.memberForm {
+  &__container {
+    &__row {
+      @include flex-row();
+      width: 90%;
+      margin: auto;
+      justify-content: flex-end;
+      padding: 10px 0;
+      font-size: 24px;
+      line-height: 30px;
+      font-weight: 700;
+
+      &__desc {
+        margin-right: 10px;
+      }
+
+      &__input {
+        width: 60%;
+        height: 30px;
+        font-size: 20px;
+        outline: none;
+      }
+    }
+
+    &__date {
+      @include flex-row();
+      justify-content: space-around;
+    }
+    &__members {
+      @include flex-column();
+      align-items: baseline;
+      padding: 0 40px;
+    }
+
+    :last-child {
+      justify-content: space-around;
+    }
+  }
+}

@@ -1,0 +1,75 @@
+.tableLine {
+  @include flex-row();
+  width: 100%;
+  border: 1px solid $gray;
+  border-top: none;
+  height: 80px;
+
+  &-elem {
+    @include flex-row();
+    height: 100%;
+    border: none;
+    border-right: 1px solid $gray;
+  }
+
+  //member
+  &__number {
+    width: 5%;
+  }
+  &__name {
+    width: 17%;
+    background-color: transparent;
+    color: $blue;
+    text-decoration: underline;
+  }
+  &__direction {
+    width: 10%;
+  }
+  &__education {
+    width: 10%;
+  }
+  &__start {
+    width: 13%;
+  }
+  &__age {
+    width: 10%;
+  }
+  &__buttons {
+    width: 35%;
+    border: none;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  //progress
+  &__note {
+    width: 45%;
+
+    .note__text {
+      display: -webkit-box;
+      line-clamp: 2;
+      box-orient: vertical;
+      overflow: hidden;
+      width: 80%;
+      text-align: center;
+      line-height: 16px;
+    }
+  }
+  &__date {
+    width: 25%;
+  }
+
+  //tasks
+  &__deadLine {
+    width: 13%;
+  }
+  &__sucess {
+    color: $green;
+  }
+  &__status {
+    width: 12%;
+  }
+  &__btnTask {
+    width: 20%;
+  }
+}

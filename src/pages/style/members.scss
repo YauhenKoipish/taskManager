@@ -1,0 +1,20 @@
+.members {
+  &__container {
+    @include container();
+
+    &__btn {
+      display: flex;
+      width: 80%;
+      padding-bottom: 15px;
+    }
+
+    &__table {
+      width: 80%;
+      max-width: 1500px;
+    }
+    &__nav {
+      width: 80%;
+      max-width: 1500px;
+    }
+  }
+}

@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "build"
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[template.environment]
+  REACT_APP_DIMS_TITLE = "set your cutom DIMS title"
+  REACT_APP_CUSTOM_LOGO = "set the url to your custom DIMS's logo here"
+

@@ -1,0 +1,31 @@
+.membersTasks {
+  &__container {
+    @include container();
+
+    &__title {
+      display: flex;
+      width: 80%;
+
+      &__text {
+        color: $gray;
+        font-size: 22px;
+      }
+    }
+
+    &__table {
+      width: 80%;
+      .tableLine__name {
+        width: 17%;
+      }
+      .tableLine__buttons {
+        width: 20%;
+      }
+    }
+    &__nav {
+      width: 80%;
+      .tableNav__nav__name {
+        width: 17%;
+      }
+    }
+  }
+}

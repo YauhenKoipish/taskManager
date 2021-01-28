@@ -1,0 +1,15 @@
+.footer {
+  @include flex-row();
+  width: 100%;
+  background-color: rgb(95, 95, 95);
+  bottom: 0;
+  height: 60px;
+  margin-top: -60px;
+
+  &__content {
+    @include flex-column();
+
+    color: white;
+    font-size: 14px;
+  }
+}

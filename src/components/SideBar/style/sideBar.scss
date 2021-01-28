@@ -1,0 +1,52 @@
+.sideBar {
+  position: fixed;
+  width: 80px;
+  top: 80px;
+  &__container {
+    background-color: $gray;
+    padding-top: 20px;
+    @include flex-column();
+
+    &__elem {
+      color: white;
+      width: 100%;
+      text-align: center;
+      padding: 5px;
+      background-color: $blue;
+      cursor: pointer;
+      text-decoration: none;
+      position: relative;
+      border: none;
+
+      &__img {
+        width: 50%;
+      }
+      // &:last-child {
+      //   :first-child {
+      //     width: 40%;
+      //     margin-left: 10px;
+      //   }
+      // }
+
+      &__desc {
+        position: absolute;
+        display: none;
+        padding: 5px;
+        top: 10px;
+        left: 80px;
+        width: 110px;
+        background-color: $gray;
+        color: white;
+      }
+      &:hover {
+        :last-child {
+          display: block;
+        }
+      }
+    }
+
+    .active {
+      background-color: $green;
+    }
+  }
+}

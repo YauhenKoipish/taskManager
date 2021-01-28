@@ -1,0 +1,34 @@
+.memberProgress {
+  &__container {
+    @include container();
+
+    &__title {
+      display: flex;
+      width: 60%;
+
+      &__text {
+        color: $gray;
+        font-size: 22px;
+      }
+    }
+
+    &__btn {
+      display: flex;
+      width: 80%;
+      padding-bottom: 15px;
+    }
+
+    &__table {
+      width: 60%;
+      .tableLine__name {
+        width: 25%;
+      }
+    }
+    &__nav {
+      width: 60%;
+      .tableNav__nav__name {
+        width: 25%;
+      }
+    }
+  }
+}

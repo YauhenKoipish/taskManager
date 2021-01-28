@@ -1,0 +1,46 @@
+.taskTracks {
+  &__container {
+    @include container();
+
+    &__title {
+      display: flex;
+      width: 60%;
+
+      &__text {
+        color: $gray;
+        font-size: 22px;
+      }
+    }
+
+    &__table {
+      width: 60%;
+      .tableLine__name {
+        width: 25%;
+      }
+      .tableLine__note {
+        width: 35%;
+      }
+      .tableLine__date {
+        width: 13%;
+      }
+      .tableLine__buttons {
+        width: 22%;
+      }
+    }
+    &__nav {
+      width: 60%;
+      .tableNav__nav__name {
+        width: 25%;
+      }
+      .tableNav__nav__note {
+        width: 35%;
+      }
+      .tableNav__nav__date {
+        width: 13%;
+      }
+      .tableNav__nav__btns {
+        width: 22%;
+      }
+    }
+  }
+}
