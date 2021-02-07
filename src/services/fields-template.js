@@ -1,3 +1,9 @@
+import membersImg from '../components/SideBar/style/members.png';
+import tasksImg from '../components/SideBar/style/tasks.png';
+
+export const memberFormDirectionsList = ['Java', '.Net', 'PHP', 'Frontend'];
+export const memberFormRolesList = ['ADMIN', 'MENTOR', 'MEMBER'];
+
 export const memberProgressFields = [
   ['name', 'Tasks'],
   ['note', 'Note'],
@@ -19,7 +25,6 @@ export const memberTasksFields = [
   ['deadLine', 'Deadline'],
   ['status', 'Status'],
   ['btnTask', ''],
-  ['btnMark', '(Available only for Admin)'],
 ];
 
 export const tasksFields = [
@@ -34,4 +39,9 @@ export const taskTracksFields = [
   ['note', 'Note'],
   ['date', 'Date'],
   ['btns', ''],
+];
+
+export const sideBarList = [
+  { name: 'Members', path: '/members', img: membersImg },
+  { name: 'Tasks', path: '/tasks', img: tasksImg },
 ];

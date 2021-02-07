@@ -3,7 +3,7 @@
   width: 120px;
   height: 35px;
   border-radius: 8px;
-  color: white;
+  color: $white;
   background-color: $blue;
   display: flex;
   justify-content: center;
@@ -19,7 +19,7 @@
     background-color: $red;
   }
   &-white {
-    background-color: white;
+    background-color: $white;
     border: 1px solid black;
     color: black;
   }
@@ -29,5 +29,8 @@
     height: 30px;
     margin: 0 10px;
     flex: 0 30%;
+  }
+  .member-btn {
+    width: 40%;
   }
 }

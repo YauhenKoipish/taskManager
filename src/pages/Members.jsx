@@ -21,9 +21,7 @@ export class Members extends Component {
       isEditMode: false,
     };
     this.handleClickShowMemberForm = this.handleClickShowMemberForm.bind(this);
-    this.handleClickSetMemberData = this.handleClickSetMemberData.bind(this);
     this.handleClickClearMemberData = this.handleClickClearMemberData.bind(this);
-    this.handleClickDetailMember = this.handleClickDetailMember.bind(this);
   }
 
   handleClickShowMemberForm() {
@@ -31,21 +29,22 @@ export class Members extends Component {
     this.setState({ memberFormActive: !memberFormActive });
   }
 
-  async handleClickSetMemberData(id) {
+  handleClickSetMemberData = (id) => async () => {
     const memberData = await getUserById(id);
+
     this.setState({
       memberData,
       isEditMode: true,
     });
     this.handleClickShowMemberForm();
-  }
+  };
 
-  async handleClickDetailMember(id) {
+  handleClickDetailMember = (id) => () => {
     this.setState({
       isReadOnly: true,
     });
-    this.handleClickSetMemberData(id);
-  }
+    this.handleClickSetMemberData(id)();
+  };
 
   handleClickClearMemberData() {
     this.setState({ memberData: null, isReadOnly: false, isEditMode: false });
@@ -54,6 +53,8 @@ export class Members extends Component {
   render() {
     const { memberFormActive, memberData, isReadOnly, isEditMode } = this.state;
     const { userData, membersData } = this.props;
+
+    const isAdmin = userData.role === 'ADMIN';
     return (
       <div className='members wrapper'>
         <SideBar />
@@ -61,41 +62,45 @@ export class Members extends Component {
         <div className='members__container '>
           <Header userData={userData} />
           <div className='members__container__btn'>
-            <Button onClick={this.handleClickShowMemberForm} className='btn'>
-              Register
-            </Button>
+            {isAdmin && (
+              <Button onClick={this.handleClickShowMemberForm} className='btn'>
+                Register
+              </Button>
+            )}
           </div>
           <div className='members__container__nav'>
             <TableNav tableNavigationFields={membersFields} />
           </div>
           <div className='members__container__table'>
-            {membersData.map((item, index) => (
+            {/* {membersData.map(({ name, age, direction, education, startDate, userId }, index) => (
               <TableLine
-                key={item.name + item.age}
+                key={userId}
                 number={index + 1}
-                name={item.name}
-                direction={item.direction}
-                education={item.education}
-                start={item.startDate}
-                age={item.age}
-                btnHandleClick={() => {
-                  this.handleClickDetailMember(item.userId);
-                }}
+                name={name}
+                direction={direction}
+                education={education}
+                start={startDate}
+                age={age}
+                handleClick={this.handleClickDetailMember(userId)}
               >
-                <ButtonLink path={`/member/${item.userId}/progress`} className='btn btn-line'>
+                <ButtonLink path={`/member/${userId}/progress`} className='btn btn-line'>
                   Progress
                 </ButtonLink>
-                <ButtonLink path={`/member/${item.userId}/tasks`} className='btn btn-line'>
+                <ButtonLink path={`/member/${userId}/tasks`} className='btn btn-line'>
                   Tasks
                 </ButtonLink>
-                <Button onClick={() => this.handleClickSetMemberData(item.userId)} className='btn btn-line'>
-                  Edit
-                </Button>
-                <Button onClick={() => deleteUserById(item.userId)} className='btn btn-line btn-red'>
-                  Delete
-                </Button>
+                {isAdmin && (
+                  <>
+                    <Button onClick={this.handleClickSetMemberData(userId)} className='btn btn-line'>
+                      Edit
+                    </Button>
+                    <Button onClick={deleteUserById(userId)} className='btn btn-line btn-red'>
+                      Delete
+                    </Button>
+                  </>
+                )}
               </TableLine>
-            ))}
+            ))} */}
           </div>
         </div>
         <Footer />

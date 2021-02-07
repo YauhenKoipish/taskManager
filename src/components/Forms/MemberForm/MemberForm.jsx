@@ -3,10 +3,9 @@ import Form from 'react-bootstrap/Form';
 import { Component } from 'react';
 import { Button } from '../../Buttons/Button/Button';
 import { registerUser, setUserData, setUserValidation } from '../../../services/services';
-import { nameGluing } from '../../../services/nameGluing';
-
-const directionsList = ['Java', '.Net', 'PHP', 'Frontend'];
-const rolesList = ['ADMIN', 'MENTOR', 'MEMBER'];
+import { createFullName } from '../../../services/createFullName';
+import SelectControl from '../components/SelectControl/SelectControl';
+import { memberFormRolesList, memberFormDirectionsList } from '../../../services/fields-template';
 
 export class MemberForm extends Component {
   constructor(props) {
@@ -32,6 +31,7 @@ export class MemberForm extends Component {
     };
     this.submitForm = this.submitForm.bind(this);
     this.inputChange = this.inputChange.bind(this);
+    this.handleClickBackToGrid = this.handleClickBackToGrid.bind(this);
   }
 
   componentDidMount() {
@@ -78,24 +78,27 @@ export class MemberForm extends Component {
     }
   }
 
+  handleClickBackToGrid() {
+    const { handleClickShowMemberForm, handleClickClearMemberData } = this.props;
+    handleClickClearMemberData();
+    handleClickShowMemberForm();
+  }
+
   async submitForm(event) {
     const { email, password, name, lastName } = this.state;
     const { isEditMode, memberData, handleClickShowMemberForm } = this.props;
-    let userId;
-    const form = event.currentTarget;
+    const { currentTarget } = event;
+
     event.preventDefault();
     this.setState({ validated: true });
-    if (form.checkValidity() === true) {
-      const fullName = nameGluing(name, lastName);
-      if (!isEditMode) {
-        userId = await registerUser(email, password, fullName, false);
-      } else {
-        userId = memberData.userId;
-      }
+    if (currentTarget.checkValidity() === true) {
+      const fullName = createFullName(name, lastName);
+      const userId = isEditMode ? memberData.userId : await registerUser(email, password, fullName, false);
+
       if (userId) {
         this.setState({ userId });
-        await setUserData(userId, this.state);
-        await setUserValidation(userId, isEditMode);
+        setUserData(userId, this.state);
+        setUserValidation(userId, isEditMode);
       }
 
       handleClickShowMemberForm();
@@ -125,9 +128,9 @@ export class MemberForm extends Component {
       validated,
       role,
     } = this.state;
-    const { handleClickShowMemberForm, handleClickClearMemberData, isReadOnly, isEditMode, memberData } = this.props;
+    const { isReadOnly, isEditMode, memberData } = this.props;
     const formTitle =
-      isReadOnly || isEditMode ? `Member -${nameGluing(memberData.name, memberData.lastName)}` : 'Add member';
+      isReadOnly || isEditMode ? `Member -${createFullName(memberData.name, memberData.lastName)}` : 'Add member';
 
     return (
       <div className='memberForm form'>
@@ -157,25 +160,22 @@ export class MemberForm extends Component {
             </Form.Group>
             <Form.Group controlId='direction'>
               <Form.Label>Direction</Form.Label>
-              <Form.Control
+
+              <SelectControl
                 readOnly={isReadOnly}
-                onBlur={this.inputChange}
-                required
-                as='select'
+                array={memberFormDirectionsList}
                 defaultValue={direction}
-              >
-                {directionsList.map((item) => (
-                  <option key={item}>{item}</option>
-                ))}
-              </Form.Control>
+                onChangeFunc={this.inputChange}
+              />
             </Form.Group>
             <Form.Group controlId='role'>
               <Form.Label>Role</Form.Label>
-              <Form.Control readOnly={isReadOnly} onBlur={this.inputChange} required as='select' defaultValue={role}>
-                {rolesList.map((item) => (
-                  <option key={item}>{item}</option>
-                ))}
-              </Form.Control>
+              <SelectControl
+                readOnly={isReadOnly}
+                array={memberFormRolesList}
+                defaultValue={role}
+                onChangeFunc={this.inputChange}
+              />
             </Form.Group>
             <Form.Group controlId='email'>
               <Form.Label>Email</Form.Label>
@@ -189,10 +189,12 @@ export class MemberForm extends Component {
             </Form.Group>
             <Form.Group controlId='sex'>
               <Form.Label>Sex</Form.Label>
-              <Form.Control readOnly={isReadOnly} onBlur={this.inputChange} required as='select' defaultValue={sex}>
-                <option>Male</option>
-                <option>Famale</option>
-              </Form.Control>
+              <SelectControl
+                readOnly={isReadOnly}
+                array={['Male', 'Famale']}
+                defaultValue={sex}
+                onChangeFunc={this.inputChange}
+              />
             </Form.Group>
             <Form.Group controlId='education'>
               <Form.Label>Education</Form.Label>
@@ -280,13 +282,7 @@ export class MemberForm extends Component {
                   Save
                 </Button>
               )}
-              <Button
-                onClick={() => {
-                  handleClickClearMemberData();
-                  handleClickShowMemberForm();
-                }}
-                className='btn btn-white '
-              >
+              <Button onClick={this.handleClickBackToGrid} className='btn btn-white '>
                 Back to grid
               </Button>
             </div>

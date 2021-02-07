@@ -7,7 +7,7 @@ import firebase from '../services/firebase';
 
 class PasswordChange extends Component {
   constructor(props) {
-    super();
+    super(props);
     this.state = {
       password: '',
       repeatPassword: '',
@@ -15,16 +15,10 @@ class PasswordChange extends Component {
       repeatPasswordFlag: false,
     };
     this.inputChange = this.inputChange.bind(this);
-    this.buttonHandleCLick = this.buttonHandleCLick.bind(this);
+    this.handleCLick = this.handleCLick.bind(this);
   }
 
-  inputChange(event) {
-    const { name, value } = event.target;
-
-    this.setState({ [name]: value });
-  }
-
-  async buttonHandleCLick() {
+  async handleCLick() {
     const { repeatPassword, password } = this.state;
     const { history } = this.props;
 
@@ -47,6 +41,12 @@ class PasswordChange extends Component {
         history.push('/members');
       }
     }
+  }
+
+  inputChange(event) {
+    const { name, value } = event.target;
+
+    this.setState({ [name]: value });
   }
 
   render() {
@@ -84,7 +84,7 @@ class PasswordChange extends Component {
             )}
           </div>
 
-          <Button onClick={this.buttonHandleCLick} className='login__container__btn btn'>
+          <Button onClick={this.handleCLick} className='login__container__btn btn'>
             Change
           </Button>
         </div>

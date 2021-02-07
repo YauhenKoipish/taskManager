@@ -4,7 +4,7 @@ import { Row, Col } from 'react-bootstrap';
 import { Component } from 'react';
 import { Button } from '../../Buttons/Button/Button';
 import { setTaskData, getRandomId } from '../../../services/services';
-import { nameGluing } from '../../../services/nameGluing';
+import { createFullName } from '../../../services/createFullName';
 
 export class TaskForm extends Component {
   constructor(props) {
@@ -22,6 +22,7 @@ export class TaskForm extends Component {
     this.submitForm = this.submitForm.bind(this);
     this.inputChange = this.inputChange.bind(this);
     this.setTaskToMember = this.setTaskToMember.bind(this);
+    this.handleClickBackToGrid = this.handleClickBackToGrid.bind(this);
   }
 
   componentDidMount() {
@@ -37,37 +38,41 @@ export class TaskForm extends Component {
       });
     } else {
       const { members } = this.state;
+      const membersStatus = {};
       membersData.forEach((item) => {
         members[item.userId] = false;
+        membersStatus[item.userId] = 'Active';
       });
-      this.setState({ members });
+      this.setState({ members, membersStatus });
     }
   }
 
+  handleClickBackToGrid() {
+    const { handleClickClearTasksData, handleClickShowTaskForm } = this.props;
+    handleClickClearTasksData();
+    handleClickShowTaskForm();
+  }
+
   setTaskToMember(event) {
-    const { members } = this.state;
+    const { members: prevMembers } = this.state;
     const { id } = event.target;
+    const members = { ...prevMembers };
     members[id] = !members[id];
     this.setState({ members });
   }
 
   async submitForm(event) {
     const { isEditMode, taskData, handleClickShowTaskForm } = this.props;
-    let taskId;
-    const form = event.currentTarget;
+    const { currentTarget } = event;
+
     event.preventDefault();
     this.setState({ validated: true });
-    if (form.checkValidity() === true) {
-      if (isEditMode) {
-        taskId = taskData.taskId;
-      } else {
-        taskId = getRandomId();
-      }
-      await this.setState({ taskId });
-
-      await setTaskData(this.state);
-
-      handleClickShowTaskForm();
+    if (currentTarget.checkValidity() === true) {
+      const taskId = isEditMode ? taskData.taskId : getRandomId();
+      this.setState({ taskId }, () => {
+        setTaskData(this.state);
+        handleClickShowTaskForm();
+      });
     }
   }
 
@@ -78,14 +83,8 @@ export class TaskForm extends Component {
 
   render() {
     const { description, startDate, deadlineDate, members, validated, name } = this.state;
-    const {
-      handleClickShowTaskForm,
-      handleClickClearTasksData,
-      isReadOnly,
-      isEditMode,
-      taskData,
-      membersData,
-    } = this.props;
+    const { isReadOnly, isEditMode, membersData, taskData } = this.props;
+
     const formTitle = isEditMode || isReadOnly ? `Task -  ${taskData.name}` : 'Create task';
 
     return (
@@ -148,15 +147,15 @@ export class TaskForm extends Component {
               <Form.Label>Members</Form.Label>
               <Col>
                 <div className='memberForm__container__members'>
-                  {membersData.map((item) => (
+                  {membersData.map(({ userId, name: memberName, lastName }) => (
                     <Form.Check
                       disabled={isReadOnly}
-                      key={item.userId}
+                      key={userId}
                       type='checkbox'
-                      id={item.userId}
-                      defaultChecked={members[item.userId]}
+                      id={userId}
+                      defaultChecked={members[userId]}
                       onClick={this.setTaskToMember}
-                      label={nameGluing(item.name, item.lastName)}
+                      label={createFullName(memberName, lastName)}
                     />
                   ))}
                 </div>
@@ -169,13 +168,7 @@ export class TaskForm extends Component {
                   Save
                 </Button>
               )}
-              <Button
-                onClick={() => {
-                  handleClickClearTasksData();
-                  handleClickShowTaskForm();
-                }}
-                className='btn btn-white '
-              >
+              <Button onClick={this.handleClickBackToGrid} className='btn btn-white '>
                 Back to grid
               </Button>
             </div>

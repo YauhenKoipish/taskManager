@@ -6,6 +6,11 @@ export const isCorrectEmail = (email) => regExp.test(email);
 
 export const isCorrectPassword = ({ length }) => length >= 8;
 
+const createSuccessfullyMessage = () => console.log('Document successfully written!');
+const createIdErrorMessage = () => console.log('No such user data, with this ID!');
+const createErrorWritingMessage = (error) => console.error('Error writing document: ', error);
+const createErrorGettingMessage = (error) => console.log('Error getting document:', error);
+
 export const loginFirebase = async (email, password) => {
   try {
     const response = await firebase.auth().signInWithEmailAndPassword(email, password);
@@ -33,7 +38,13 @@ export const registerUser = async (email, password, displayName, emailVerified) 
   return userId;
 };
 
-export const deleteUserById = async (userId) => {
+export const getRealTimeUpdateData = (docName) =>
+  db
+    .collection('data')
+    .doc(docName)
+    .onSnapshot((doc) => Object.values(doc.data()));
+
+export const deleteUserById = (userId) => async () => {
   const users = await db.collection('data').doc('users');
   const usersValidation = await db.collection('data').doc('usersValidation');
 
@@ -55,16 +66,13 @@ export const setUserData = async (userId, data) => {
       { merge: true },
     )
     .then(() => {
-      console.log('Document successfully written!');
+      createSuccessfullyMessage();
     })
     .catch((error) => {
-      console.error('Error writing document: ', error);
+      createErrorWritingMessage(error);
     });
 };
 
-export const getUserStatus = async () => {
-  await firebase.auth().onAuthStateChanged((user) => Boolean(user));
-};
 export const getAllMembers = async () => {
   const docRef = await db.collection('data').doc('users');
   return docRef
@@ -73,12 +81,11 @@ export const getAllMembers = async () => {
       if (doc.exists) {
         return Object.values(doc.data());
       }
-      // doc.data() will be undefined in this case
       console.log('No such document!');
       return null;
     })
     .catch((error) => {
-      console.log('Error getting document:', error);
+      createErrorGettingMessage(error);
     });
 };
 
@@ -92,10 +99,10 @@ export const setUserValidation = async (userId, value) => {
       { merge: true },
     )
     .then(() => {
-      console.log('Document successfully written!');
+      createSuccessfullyMessage();
     })
     .catch((error) => {
-      console.error('Error writing document: ', error);
+      createErrorWritingMessage(error);
     });
 };
 
@@ -107,12 +114,12 @@ export const getUserValidation = async (userId) => {
       if (doc.exists) {
         return doc.data()[userId];
       }
-      // doc.data() will be undefined in this case
-      console.log('No such user data, with this ID!');
+
+      createIdErrorMessage();
       return null;
     })
     .catch((error) => {
-      console.log('Error getting document:', error);
+      createErrorGettingMessage(error);
     });
 };
 
@@ -132,59 +139,62 @@ export const getUserById = async (id) => {
       if (doc.exists) {
         return doc.data()[id];
       }
-      // doc.data() will be undefined in this case
-      console.log('No such user data, with this ID!');
+      createIdErrorMessage();
       return null;
     })
     .catch((error) => {
-      console.log('Error getting document:', error);
+      createErrorGettingMessage(error);
     });
 };
 
 export const getRandomId = () => `${Math.random().toString(36).substr(2, 9)}`;
 
 export const setTaskData = async (data) => {
+  const { taskId } = data;
+
   db.collection('data')
     .doc('tasks')
     .set(
       {
-        [data.taskId]: data,
+        [taskId]: data,
       },
       { merge: true },
     )
     .then(() => {
-      console.log('Document successfully written!');
+      createSuccessfullyMessage();
     })
     .catch((error) => {
-      console.error('Error writing document: ', error);
+      createErrorWritingMessage(error);
     });
 };
 
-export const setUserSubTaskData = async (userId, taskId, data) => {
+export const setUserSubTaskData = async (data) => {
+  const { userId, taskId, subTaskId } = data;
+
   db.collection('data')
     .doc('memberTasks')
     .set(
       {
-        [userId]: { [taskId]: { [data.subTaskId]: data } },
+        [userId]: { [taskId]: { [subTaskId]: data } },
       },
       { merge: true },
     )
     .then(() => {
-      console.log('Document successfully written!');
+      createSuccessfullyMessage();
     })
     .catch((error) => {
-      console.error('Error writing document: ', error);
+      createErrorWritingMessage(error);
     });
 };
 
-export const deleteTaskById = async (taskId) => {
+export const deleteTaskById = (taskId) => async () => {
   const tasks = await db.collection('data').doc('tasks');
   await tasks.update({
     [taskId]: firebase.firestore.FieldValue.delete(),
   });
 };
 
-export const deleteSubTaskById = async (userId, taskId, subTaskId) => {
+export const deleteSubTaskById = (userId, taskId, subTaskId) => async () => {
   const subTasks = await db.collection('data').doc('memberTasks');
   const userTasks = await subTasks.get().then((doc) => doc.data()[userId]);
   const userSubtasks = userTasks[taskId];
@@ -202,12 +212,11 @@ export const getTaskById = async (id) => {
       if (doc.exists) {
         return doc.data()[id];
       }
-      // doc.data() will be undefined in this case
-      console.log('No such user data, with this ID!');
+      createIdErrorMessage();
       return null;
     })
     .catch((error) => {
-      console.log('Error getting document:', error);
+      createErrorGettingMessage(error);
     });
 };
 
@@ -219,33 +228,28 @@ export const getSubTaskById = async (userId, taskId, subTaskId) => {
       if (doc.exists) {
         return doc.data()[userId][taskId][subTaskId];
       }
-      // doc.data() will be undefined in this case
-      console.log('No such user data, with this ID!');
+      createIdErrorMessage();
       return null;
     })
     .catch((error) => {
-      console.log('Error getting document:', error);
+      createErrorGettingMessage(error);
     });
 };
 
 export const getTasksDataById = async (id) => {
-  const data = [];
+  let data;
   const docRef = await db.collection('data').doc('tasks');
   return docRef
     .get()
     .then((doc) => {
       if (doc.exists) {
         const tasks = Object.values(doc.data());
-        tasks.forEach((item) => {
-          if (item.members[id] === true) {
-            data.push(item);
-          }
-        });
+        data = tasks.filter((item) => item.members[id] === true);
       }
       return data;
     })
     .catch((error) => {
-      console.log('Error getting document:', error);
+      createErrorGettingMessage(error);
     });
 };
 
@@ -254,53 +258,48 @@ export const getTaskTrackById = async (userId, taskId) => {
   return docRef
     .get()
     .then((doc) => {
-      if (doc.exists) {
-        if (doc.data()[userId]) {
-          if (doc.data()[userId][taskId]) {
-            return Object.values(doc.data()[userId][taskId]);
-          }
-        }
-        return {};
+      const userData = doc.data()[userId];
+      if (userData && userData[taskId]) {
+        return Object.values(userData[taskId]);
       }
-      console.log('No such user data, with this ID!');
-      return null;
+      return {};
     })
     .catch((error) => {
-      console.log('Error getting document:', error);
+      createErrorGettingMessage(error);
     });
 };
 
 export const getMemberProgressById = async (id) => {
   const tasksData = await getTasksDataById(id);
-  const subTasksData = [];
+  let subTasksData = [];
   const docRef = await db.collection('data').doc('memberTasks');
 
   return docRef
     .get()
     .then((doc) => {
       if (doc.exists) {
-        const subTasks = Object.values(doc.data()[id] ? doc.data()[id] : doc.data());
+        const subTasks = Object.values(doc.data()[id] ? doc.data()[id] : []);
         subTasks.forEach((item) => {
-          Object.values(item).forEach((subTask) => {
-            subTasksData.push(subTask);
-          });
+          subTasksData = [...Object.values(item)];
         });
       }
-      tasksData.forEach((task) => {
-        let flag = true;
-        for (let i = 0; i < subTasksData.length; i += 1) {
-          if (task.taskId === subTasksData[i].taskId) {
-            flag = false;
+
+      subTasksData = [
+        ...subTasksData,
+        ...tasksData.filter((task) => {
+          for (let i = 0; i < subTasksData.length; i += 1) {
+            if (task.taskId === subTasksData[i].taskId) {
+              return false;
+            }
           }
-        }
-        if (flag) {
-          subTasksData.push(task);
-        }
-      });
+          return true;
+        }),
+      ];
+
       return subTasksData;
     })
     .catch((error) => {
-      console.log('Error getting document:', error);
+      createErrorGettingMessage(error);
     });
 };
 
@@ -312,11 +311,16 @@ export const getAllTasks = async () => {
       if (doc.exists) {
         return Object.values(doc.data());
       }
-      // doc.data() will be undefined in this case
-      console.log('No such document!');
+      createIdErrorMessage();
       return null;
     })
     .catch((error) => {
-      console.log('Error getting document:', error);
+      createErrorGettingMessage(error);
     });
+};
+
+export const changeTaskStatus = (userId, taskId, status) => async () => {
+  const taskData = await getTaskById(taskId);
+  taskData.membersStatus[userId] = status;
+  setTaskData(taskData);
 };

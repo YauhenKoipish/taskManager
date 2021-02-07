@@ -1,0 +1,2 @@
+export const APP_WRITE_USER_DATA = 'APP_WRITE_USER_DATA';
+export const APP_IS_NOT_AUTH = 'APP_IS_NOT_AUTH';

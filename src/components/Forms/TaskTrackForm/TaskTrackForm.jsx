@@ -20,6 +20,7 @@ export class TaskTrackForm extends Component {
     };
     this.submitForm = this.submitForm.bind(this);
     this.inputChange = this.inputChange.bind(this);
+    this.handleClickBackToGrid = this.handleClickBackToGrid.bind(this);
   }
 
   async componentDidMount() {
@@ -32,28 +33,30 @@ export class TaskTrackForm extends Component {
         name,
       });
     } else {
-      getTaskById(taskId).then((item) => {
-        this.setState({ name: item.name });
+      getTaskById(taskId).then(({ name }) => {
+        this.setState({ name });
       });
     }
   }
 
+  handleClickBackToGrid() {
+    const { handleClickShowTaskTrackForm, handleClickClearTasksTrackData } = this.props;
+    handleClickClearTasksTrackData();
+    handleClickShowTaskTrackForm();
+  }
+
   async submitForm(event) {
     const { isEditMode, taskData, handleClickShowTaskTrackForm, userId, taskId } = this.props;
-    let subTaskId;
+
     const form = event.currentTarget;
     event.preventDefault();
     this.setState({ validated: true });
     if (form.checkValidity() === true) {
-      if (isEditMode) {
-        subTaskId = taskData.subTaskId;
-      } else {
-        subTaskId = getRandomId();
-      }
-      await this.setState({ subTaskId, taskId, userId });
-      await setUserSubTaskData(userId, taskId, this.state);
-
-      handleClickShowTaskTrackForm();
+      const subTaskId = isEditMode ? taskData.subTaskId : getRandomId();
+      this.setState({ subTaskId, taskId, userId }, () => {
+        setUserSubTaskData(this.state);
+        handleClickShowTaskTrackForm();
+      });
     }
   }
 
@@ -64,13 +67,7 @@ export class TaskTrackForm extends Component {
 
   render() {
     const { date, note, validated } = this.state;
-    const {
-      handleClickShowTaskTrackForm,
-      handleClickClearTasksTrackData,
-      isReadOnly,
-      isEditMode,
-      taskData,
-    } = this.props;
+    const { isReadOnly, isEditMode, taskData } = this.props;
 
     const formTitle = isEditMode || isReadOnly ? `Task -  ${taskData.name}` : 'Create subTask';
     return (
@@ -110,13 +107,7 @@ export class TaskTrackForm extends Component {
                   Save
                 </Button>
               )}
-              <Button
-                onClick={() => {
-                  handleClickShowTaskTrackForm();
-                  handleClickClearTasksTrackData();
-                }}
-                className='btn btn-white '
-              >
+              <Button onClick={this.handleClickBackToGrid} className='btn btn-white '>
                 Back to grid
               </Button>
             </div>

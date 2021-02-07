@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import PropTypes from 'prop-types';
 import { Component } from 'react';
 import { Footer } from '../components/Footer/Footer';
@@ -10,8 +9,9 @@ import { SideBar } from '../components/SideBar/SideBar';
 import EmptyData from '../components/EmptyData/EmptyData';
 import { Loader } from '../components/Loader/Loader';
 import { TaskTrackForm } from '../components/Forms/TaskTrackForm/TaskTrackForm';
-import { getTaskTrackById, getSubTaskById, deleteSubTaskById } from '../services/services';
+import { getSubTaskById, deleteSubTaskById } from '../services/services';
 import { taskTracksFields } from '../services/fields-template';
+import { db } from '../services/firebase';
 
 export class TaskTracks extends Component {
   constructor(props) {
@@ -26,9 +26,9 @@ export class TaskTracks extends Component {
       isDataLoad: false,
     };
     this.handleClickShowTaskTrackForm = this.handleClickShowTaskTrackForm.bind(this);
-    this.handleClickSetTasksTrackData = this.handleClickSetTasksTrackData.bind(this);
-    this.handleClickDetailTaskTrack = this.handleClickDetailTaskTrack.bind(this);
     this.handleClickClearTasksTrackData = this.handleClickClearTasksTrackData.bind(this);
+    this.getPageData = this.getPageData.bind(this);
+    this.getRealtimeUpdateData = this.getRealtimeUpdateData.bind(this);
   }
 
   async componentDidMount() {
@@ -38,10 +38,12 @@ export class TaskTracks extends Component {
       },
     } = this.props;
 
-    const tasksData = await getTaskTrackById(userId, taskId);
-    if (tasksData) {
-      this.setState({ tasksData, isDataEmpty: tasksData[0], isDataLoad: true });
-    }
+    await this.getRealtimeUpdateData(userId, taskId);
+  }
+
+  componentWillUnmount() {
+    const { unsubscribe } = this.state;
+    unsubscribe();
   }
 
   handleClickShowTaskTrackForm() {
@@ -49,7 +51,7 @@ export class TaskTracks extends Component {
     this.setState({ tasksTrackFormActive: !tasksTrackFormActive });
   }
 
-  async handleClickSetTasksTrackData(subTaskId) {
+  handleClickSetTasksTrackData = (subTaskId) => async () => {
     const {
       computedMatch: {
         params: { userId, taskId },
@@ -62,21 +64,72 @@ export class TaskTracks extends Component {
       isEditMode: true,
     });
     this.handleClickShowTaskTrackForm();
-  }
+  };
 
   handleClickClearTasksTrackData() {
     this.setState({ isReadOnly: false });
   }
 
-  async handleClickDetailTaskTrack(id) {
+  getRealtimeUpdateData = (userId, taskId) => {
+    const unsubscribe = db
+      .collection('data')
+      .doc('memberTasks')
+      .onSnapshot((doc) => {
+        const userData = doc.data()[userId];
+        if (userData && userData[taskId]) {
+          this.setState({
+            tasksData: Object.values(userData[taskId]),
+            isDataEmpty: Object.values(userData[taskId])[0],
+            isDataLoad: true,
+          });
+        } else {
+          this.setState({
+            isDataEmpty: null,
+            isDataLoad: true,
+          });
+        }
+        return {};
+      });
+    this.setState({ unsubscribe });
+  };
+
+  handleClickDetailTaskTrack = (id) => async () => {
     this.setState({
       isReadOnly: true,
     });
-    this.handleClickSetTasksTrackData(id);
+    this.handleClickSetTasksTrackData(id)();
+  };
+
+  getPageData() {
+    const { tasksData, isDataEmpty, isDataLoad } = this.state;
+
+    if (isDataLoad) {
+      if (isDataEmpty) {
+        return tasksData.map(({ subTaskId, taskId, userId, name, date, note }, index) => (
+          <TableLine
+            key={subTaskId}
+            number={index + 1}
+            name={name}
+            note={<div className='note__text'>{note}</div>}
+            date={date}
+            handleClick={this.handleClickDetailTaskTrack(subTaskId)}
+          >
+            <Button onClick={this.handleClickSetTasksTrackData(subTaskId)} className='btn btn-line '>
+              Edit
+            </Button>
+            <Button onClick={deleteSubTaskById(userId, taskId, subTaskId)} className='btn btn-line btn-red'>
+              Delete
+            </Button>
+          </TableLine>
+        ));
+      }
+      return <EmptyData text='This task has no subTasks!' />;
+    }
+    return <Loader />;
   }
 
   render() {
-    const { tasksTrackFormActive, taskData, isReadOnly, isEditMode, tasksData, isDataEmpty, isDataLoad } = this.state;
+    const { tasksTrackFormActive, taskData, isReadOnly, isEditMode } = this.state;
     const {
       userData,
       computedMatch: {
@@ -94,45 +147,7 @@ export class TaskTracks extends Component {
           <div className='taskTracks__container__nav'>
             <TableNav tableNavigationFields={taskTracksFields} />
           </div>
-          <div className='taskTracks__container__table'>
-            {isDataLoad ? (
-              isDataEmpty ? (
-                tasksData.map((item, index) => (
-                  <TableLine
-                    key={item.subTaskId}
-                    number={index + 1}
-                    name={item.name}
-                    note={<div className='note__text'>{item.note}</div>}
-                    date={item.date}
-                    btnHandleClick={() => {
-                      this.handleClickDetailTaskTrack(item.subTaskId);
-                    }}
-                  >
-                    <Button
-                      onClick={() => {
-                        this.handleClickSetTasksTrackData(item.subTaskId);
-                      }}
-                      className='btn btn-line '
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        deleteSubTaskById(item.userId, item.taskId, item.subTaskId);
-                      }}
-                      className='btn btn-line btn-red'
-                    >
-                      Delete
-                    </Button>
-                  </TableLine>
-                ))
-              ) : (
-                <EmptyData text='This task has no subTasks!' />
-              )
-            ) : (
-              <Loader />
-            )}
-          </div>
+          <div className='taskTracks__container__table'>{this.getPageData()}</div>
         </div>
         <Footer />
         {tasksTrackFormActive && (

@@ -20,7 +20,6 @@ export class Tasks extends Component {
       isEditMode: false,
     };
     this.handleClickShowTaskForm = this.handleClickShowTaskForm.bind(this);
-    this.handleClickSetTasksData = this.handleClickSetTasksData.bind(this);
     this.handleClickClearTasksData = this.handleClickClearTasksData.bind(this);
     this.handleClickDetailTasks = this.handleClickDetailTasks.bind(this);
   }
@@ -30,21 +29,21 @@ export class Tasks extends Component {
     this.setState({ tasksFormActive: !tasksFormActive });
   }
 
-  async handleClickSetTasksData(id) {
+  handleClickSetTasksData = (id) => async () => {
     const taskData = await getTaskById(id);
     this.setState({
       taskData,
       isEditMode: true,
     });
     this.handleClickShowTaskForm();
-  }
+  };
 
-  async handleClickDetailTasks(id) {
+  handleClickDetailTasks = (id) => () => {
     this.setState({
       isReadOnly: true,
     });
-    this.handleClickSetTasksData(id);
-  }
+    this.handleClickSetTasksData(id)();
+  };
 
   handleClickClearTasksData() {
     this.setState({ taskData: null, isReadOnly: false, isEditMode: false });
@@ -67,21 +66,19 @@ export class Tasks extends Component {
             <TableNav tableNavigationFields={tasksFields} />
           </div>
           <div className='tasks__container__table'>
-            {tasksData.map((item, index) => (
+            {tasksData.map(({ name, startDate, deadlineDate, taskId }, index) => (
               <TableLine
-                key={item.name + item.startDate}
+                key={name + startDate}
                 number={index + 1}
-                name={item.name}
-                start={item.startDate}
-                deadLine={item.deadlineDate}
-                btnHandleClick={() => {
-                  this.handleClickDetailTasks(item.taskId);
-                }}
+                name={name}
+                start={startDate}
+                deadLine={deadlineDate}
+                handleClick={this.handleClickDetailTasks(taskId)}
               >
-                <Button onClick={() => this.handleClickSetTasksData(item.taskId)} className='btn btn-line '>
+                <Button onClick={this.handleClickSetTasksData(taskId)} className='btn btn-line '>
                   Edit
                 </Button>
-                <Button onClick={() => deleteTaskById(item.taskId)} className='btn btn-line btn-red'>
+                <Button onClick={deleteTaskById(taskId)} className='btn btn-line btn-red'>
                   Delete
                 </Button>
               </TableLine>

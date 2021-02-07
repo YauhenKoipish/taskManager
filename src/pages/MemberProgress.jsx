@@ -20,6 +20,7 @@ export class MemberProgress extends Component {
       isDataLoad: false,
       selectedUser: {},
     };
+    this.getPageData = this.getPageData.bind(this);
   }
 
   async componentDidMount() {
@@ -32,15 +33,39 @@ export class MemberProgress extends Component {
     const tasksData = await getMemberProgressById(userId);
     const selectedUser = await getUserById(userId);
     if (tasksData) {
-      this.setState({ tasksData, isDataEmpty: tasksData[0], isDataLoad: true });
+      this.setState((prevState) => {
+        const isDataEmpty = tasksData[0];
+        const isDataLoad = true;
+
+        return { ...prevState, tasksData, isDataEmpty, isDataLoad };
+      });
     }
     if (selectedUser) {
       this.setState({ selectedUser });
     }
   }
 
+  getPageData() {
+    const { tasksData, isDataEmpty, isDataLoad } = this.state;
+    if (isDataLoad) {
+      if (isDataEmpty) {
+        return tasksData.map(({ taskId, subTaskId, name, startDate, date, description, note }, index) => (
+          <TableLine
+            key={subTaskId || taskId}
+            number={index + 1}
+            name={name}
+            note={<div className='note__text'>{description || note}</div>}
+            date={startDate || date}
+          />
+        ));
+      }
+      return <EmptyData />;
+    }
+    return <Loader />;
+  }
+
   render() {
-    const { selectedUser, tasksData, isDataEmpty, isDataLoad } = this.state;
+    const { selectedUser } = this.state;
     const { userData } = this.props;
 
     return (
@@ -55,27 +80,7 @@ export class MemberProgress extends Component {
           <div className='memberProgress__container__nav'>
             <TableNav tableNavigationFields={memberProgressFields} />
           </div>
-          <div className='memberProgress__container__table'>
-            {isDataLoad ? (
-              isDataEmpty ? (
-                tasksData.map((item, index) => (
-                  <TableLine
-                    isButtonLink
-                    path={`/${item.taskId}/track`}
-                    key={item.subTaskId || item.taskId}
-                    number={index + 1}
-                    name={item.name}
-                    note={<div className='note__text'>{item.description || item.note}</div>}
-                    date={item.startDate || item.date}
-                  />
-                ))
-              ) : (
-                <EmptyData />
-              )
-            ) : (
-              <Loader />
-            )}
-          </div>
+          <div className='memberProgress__container__table'>{this.getPageData()}</div>
         </div>
         <Footer />
       </div>
