@@ -3,8 +3,8 @@
   width: 120px;
   height: 35px;
   border-radius: 8px;
-  color: $white;
-  background-color: $blue;
+  color: getColor(color-5);
+  background-color: getColor(color-1);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -13,13 +13,13 @@
   cursor: pointer;
 
   &-green {
-    background-color: $green;
+    background-color: getColor(color-3);
   }
   &-red {
-    background-color: $red;
+    background-color: getColor(color-4);
   }
   &-white {
-    background-color: $white;
+    background-color: getColor(color-5);
     border: 1px solid black;
     color: black;
   }

@@ -1,7 +1,7 @@
 .tableLine {
   @include flex-row();
   width: 100%;
-  border: 1px solid $gray;
+  border: 1px solid getColor(color-2);
   border-top: none;
   height: 80px;
 
@@ -9,7 +9,7 @@
     @include flex-row();
     height: 100%;
     border: none;
-    border-right: 1px solid $gray;
+    border-right: 1px solid getColor(color-2);
   }
 
   //member
@@ -19,7 +19,7 @@
   &__name {
     width: 17%;
     background-color: transparent;
-    color: $blue;
+    color: getColor(color-1);
     text-decoration: underline;
   }
   &__direction {
@@ -64,10 +64,10 @@
     width: 13%;
   }
   &__sucess {
-    color: $green;
+    color: getColor(color-3);
   }
   &__fail {
-    color: $red;
+    color: getColor(color-4);
   }
   &__status {
     width: 12%;

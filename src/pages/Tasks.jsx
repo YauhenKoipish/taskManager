@@ -1,5 +1,5 @@
-import PropTypes from 'prop-types';
-import { Component } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { useState } from 'react';
 import { Footer } from '../components/Footer/Footer';
 import { Button } from '../components/Buttons/Button/Button';
 import { TableLine } from '../components/TableLine/TableLine';
@@ -7,102 +7,76 @@ import { TableNav } from '../components/TableNav/TableNav';
 import { Header } from '../components/Header/Header';
 import { SideBar } from '../components/SideBar/SideBar';
 import { tasksFields } from '../services/fields-template';
-import { TaskForm } from '../components/Forms/TaskForm/TaskForm';
-import { getTaskById, deleteTaskById } from '../services/services';
+import TaskForm from '../components/Forms/TaskForm/TaskForm';
+import { deleteTaskById } from '../services/services';
+import { getTaskData, clearData, setReadOnly } from '../store/actions/tasks';
 
-export class Tasks extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      tasksFormActive: false,
-      taskData: null,
-      isReadOnly: false,
-      isEditMode: false,
-    };
-    this.handleClickShowTaskForm = this.handleClickShowTaskForm.bind(this);
-    this.handleClickClearTasksData = this.handleClickClearTasksData.bind(this);
-    this.handleClickDetailTasks = this.handleClickDetailTasks.bind(this);
-  }
+export const Tasks = () => {
+  const {
+    app: { tasksData },
+  } = useSelector((state) => state);
+  const dispatch = useDispatch();
 
-  handleClickShowTaskForm() {
-    const { tasksFormActive } = this.state;
-    this.setState({ tasksFormActive: !tasksFormActive });
-  }
+  const [tasksFormActive, setTasksFormActive] = useState(false);
 
-  handleClickSetTasksData = (id) => async () => {
-    const taskData = await getTaskById(id);
-    this.setState({
-      taskData,
-      isEditMode: true,
-    });
-    this.handleClickShowTaskForm();
+  const handleClickShowTaskForm = () => {
+    setTasksFormActive(!tasksFormActive);
   };
 
-  handleClickDetailTasks = (id) => () => {
-    this.setState({
-      isReadOnly: true,
-    });
-    this.handleClickSetTasksData(id)();
+  const handleClickSetTasksData = (id) => async () => {
+    await dispatch(getTaskData(id));
+    handleClickShowTaskForm();
   };
 
-  handleClickClearTasksData() {
-    this.setState({ taskData: null, isReadOnly: false, isEditMode: false });
-  }
+  const handleClickDetailTasks = (id) => () => {
+    dispatch(setReadOnly());
+    handleClickSetTasksData(id)();
+  };
 
-  render() {
-    const { tasksFormActive, taskData, isReadOnly, isEditMode } = this.state;
-    const { userData, tasksData, membersData } = this.props;
-    return (
-      <div className='tasks wrapper'>
-        <SideBar />
-        <div className='tasks__container'>
-          <Header userData={userData} />
-          <div className='tasks__container__btn'>
-            <Button onClick={this.handleClickShowTaskForm} className='btn'>
-              Create
-            </Button>
-          </div>
-          <div className='tasks__container__nav'>
-            <TableNav tableNavigationFields={tasksFields} />
-          </div>
-          <div className='tasks__container__table'>
-            {tasksData.map(({ name, startDate, deadlineDate, taskId }, index) => (
-              <TableLine
-                key={name + startDate}
-                number={index + 1}
-                name={name}
-                start={startDate}
-                deadLine={deadlineDate}
-                handleClick={this.handleClickDetailTasks(taskId)}
-              >
-                <Button onClick={this.handleClickSetTasksData(taskId)} className='btn btn-line '>
-                  Edit
-                </Button>
-                <Button onClick={deleteTaskById(taskId)} className='btn btn-line btn-red'>
-                  Delete
-                </Button>
-              </TableLine>
-            ))}
-          </div>
+  const handleClickClearTasksData = () => {
+    dispatch(clearData());
+  };
+
+  return (
+    <div className='tasks wrapper'>
+      <SideBar />
+      <div className='tasks__container'>
+        <Header />
+        <div className='tasks__container__btn'>
+          <Button onClick={handleClickShowTaskForm} className='btn'>
+            Create
+          </Button>
         </div>
-        <Footer />
-        {tasksFormActive && (
-          <TaskForm
-            isEditMode={isEditMode}
-            taskData={taskData}
-            membersData={membersData}
-            isReadOnly={isReadOnly}
-            handleClickClearTasksData={this.handleClickClearTasksData}
-            handleClickShowTaskForm={this.handleClickShowTaskForm}
-          />
-        )}
+        <div className='tasks__container__nav'>
+          <TableNav tableNavigationFields={tasksFields} />
+        </div>
+        <div className='tasks__container__table'>
+          {tasksData.map(({ name, startDate, deadlineDate, taskId }, index) => (
+            <TableLine
+              key={name + startDate}
+              number={index + 1}
+              name={name}
+              start={startDate}
+              deadLine={deadlineDate}
+              handleClick={handleClickDetailTasks(taskId)}
+            >
+              <Button onClick={handleClickSetTasksData(taskId)} className='btn btn-line '>
+                Edit
+              </Button>
+              <Button onClick={deleteTaskById(taskId)} className='btn btn-line btn-red'>
+                Delete
+              </Button>
+            </TableLine>
+          ))}
+        </div>
       </div>
-    );
-  }
-}
-
-Tasks.propTypes = {
-  userData: PropTypes.objectOf(PropTypes.any).isRequired,
-  tasksData: PropTypes.arrayOf(PropTypes.any).isRequired,
-  membersData: PropTypes.arrayOf(PropTypes.any).isRequired,
+      <Footer />
+      {tasksFormActive && (
+        <TaskForm
+          handleClickClearTasksData={handleClickClearTasksData}
+          handleClickShowTaskForm={handleClickShowTaskForm}
+        />
+      )}
+    </div>
+  );
 };

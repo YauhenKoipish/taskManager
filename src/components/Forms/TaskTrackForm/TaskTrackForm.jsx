@@ -1,12 +1,14 @@
+/* eslint-disable react/destructuring-assignment */
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
+import { connect } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
-import { Component } from 'react';
+import { PureComponent } from 'react';
 import { Button } from '../../Buttons/Button/Button';
-import noop from '../../../shared/noop';
 import { setUserSubTaskData, getRandomId, getTaskById } from '../../../services/services';
+import { clearData } from '../../../store/actions/taskTrack';
 
-export class TaskTrackForm extends Component {
+class TaskTrackForm extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -40,13 +42,12 @@ export class TaskTrackForm extends Component {
   }
 
   handleClickBackToGrid() {
-    const { handleClickShowTaskTrackForm, handleClickClearTasksTrackData } = this.props;
-    handleClickClearTasksTrackData();
-    handleClickShowTaskTrackForm();
+    this.props.closeForm();
+    this.props.clearData();
   }
 
   async submitForm(event) {
-    const { isEditMode, taskData, handleClickShowTaskTrackForm, userId, taskId } = this.props;
+    const { isEditMode, taskData, userId, taskId } = this.props;
 
     const form = event.currentTarget;
     event.preventDefault();
@@ -55,7 +56,7 @@ export class TaskTrackForm extends Component {
       const subTaskId = isEditMode ? taskData.subTaskId : getRandomId();
       this.setState({ subTaskId, taskId, userId }, () => {
         setUserSubTaskData(this.state);
-        handleClickShowTaskTrackForm();
+        this.handleClickBackToGrid();
       });
     }
   }
@@ -70,6 +71,7 @@ export class TaskTrackForm extends Component {
     const { isReadOnly, isEditMode, taskData } = this.props;
 
     const formTitle = isEditMode || isReadOnly ? `Task -  ${taskData.name}` : 'Create subTask';
+
     return (
       <div className='memberForm form'>
         <div className='memberForm__container form__container'>
@@ -77,7 +79,7 @@ export class TaskTrackForm extends Component {
 
           <Form noValidate validated={validated} onSubmit={this.submitForm}>
             <Form.Group as={Row} controlId='date'>
-              <Form.Label>DeadLine</Form.Label>
+              <Form.Label>Date</Form.Label>
               <Col>
                 <Form.Control
                   readOnly={isReadOnly}
@@ -119,18 +121,36 @@ export class TaskTrackForm extends Component {
 }
 
 TaskTrackForm.propTypes = {
-  handleClickShowTaskTrackForm: PropTypes.func.isRequired,
-  handleClickClearTasksTrackData: PropTypes.func,
-  taskData: PropTypes.objectOf(PropTypes.any),
-  isReadOnly: PropTypes.bool,
-  isEditMode: PropTypes.bool,
+  taskData: PropTypes.shape({
+    note: PropTypes.string,
+    date: PropTypes.string,
+    name: PropTypes.string,
+    subTaskId: PropTypes.string,
+  }),
+  isReadOnly: PropTypes.bool.isRequired,
+  isEditMode: PropTypes.bool.isRequired,
   userId: PropTypes.string.isRequired,
   taskId: PropTypes.string.isRequired,
+  clearData: PropTypes.func.isRequired,
+  closeForm: PropTypes.func.isRequired,
 };
 
 TaskTrackForm.defaultProps = {
   taskData: null,
-  handleClickClearTasksTrackData: noop,
-  isReadOnly: false,
-  isEditMode: false,
 };
+
+function mapStateToProps({ taskTrack: { taskData, isReadOnly, isEditMode } }) {
+  return {
+    taskData,
+    isReadOnly,
+    isEditMode,
+  };
+}
+
+function mapDispatchToProps(dispatch) {
+  return {
+    clearData: () => dispatch(clearData()),
+  };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(TaskTrackForm);

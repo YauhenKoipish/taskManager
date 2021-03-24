@@ -7,7 +7,7 @@
       width: 80%;
 
       &__text {
-        color: $gray;
+        color: getColor(color-2);
         font-size: 22px;
       }
     }

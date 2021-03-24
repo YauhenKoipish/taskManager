@@ -12,5 +12,5 @@ export const TableNav = ({ tableNavigationFields }) => (
 );
 
 TableNav.propTypes = {
-  tableNavigationFields: PropTypes.arrayOf(PropTypes.any).isRequired,
+  tableNavigationFields: PropTypes.arrayOf(PropTypes.array).isRequired,
 };

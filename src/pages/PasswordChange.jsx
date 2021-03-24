@@ -1,36 +1,38 @@
-import PropTypes from 'prop-types';
-import { withRouter } from 'react-router-dom';
-import { Component } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useState } from 'react';
 import { Button } from '../components/Buttons/Button/Button';
 import { setUserValidation, isCorrectPassword } from '../services/services';
 import firebase from '../services/firebase';
+import { getUserData } from '../store/actions/app';
 
-class PasswordChange extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      password: '',
-      repeatPassword: '',
-      passwordFlag: false,
-      repeatPasswordFlag: false,
-    };
-    this.inputChange = this.inputChange.bind(this);
-    this.handleCLick = this.handleCLick.bind(this);
-  }
+export const PasswordChange = () => {
+  const {
+    app: {
+      userData: { email },
+    },
+  } = useSelector((state) => state);
 
-  async handleCLick() {
-    const { repeatPassword, password } = this.state;
-    const { history } = this.props;
+  const [data, setData] = useState({
+    repeatPassword: '',
+    password: '',
+  });
+
+  const [passwordFlag, setPasswordFlag] = useState(false);
+  const [repeatPasswordFlag, setRepeatPasswordFlag] = useState(false);
+  const dispatch = useDispatch();
+
+  const handleCLick = async () => {
+    const { password, repeatPassword } = data;
 
     if (!isCorrectPassword(password)) {
-      this.setState({ passwordFlag: true });
+      setPasswordFlag(true);
     } else {
-      this.setState({ passwordFlag: false });
+      setPasswordFlag(false);
     }
-    if (!isCorrectPassword(repeatPassword) && password !== repeatPassword) {
-      this.setState({ repeatPasswordFlag: true });
+    if (!isCorrectPassword(repeatPassword) || password !== repeatPassword) {
+      setRepeatPasswordFlag(true);
     } else {
-      this.setState({ repeatPasswordFlag: false });
+      setRepeatPasswordFlag(false);
     }
 
     if (isCorrectPassword(password) && isCorrectPassword(repeatPassword) && password === repeatPassword) {
@@ -38,63 +40,47 @@ class PasswordChange extends Component {
       if (user) {
         await user.updatePassword(repeatPassword);
         await setUserValidation(user.uid, true);
-        history.push('/members');
+        const userDataAction = getUserData();
+        dispatch(userDataAction);
       }
     }
-  }
+  };
 
-  inputChange(event) {
+  const inputChange = (event) => {
     const { name, value } = event.target;
+    setData((prevData) => ({ ...prevData, [name]: value }));
+  };
 
-    this.setState({ [name]: value });
-  }
-
-  render() {
-    const { passwordFlag, repeatPasswordFlag } = this.state;
-    const { userData } = this.props;
-
-    return (
-      <div className='login'>
-        <div className='login__container'>
-          <div className='login__container__title'>Change password</div>
-          <div className='login__container__row'>
-            <span className='login__container__row__desc'>Email</span>
-            <input readOnly type='email' placeholder={userData.email} className='login__container__row__input' />
-          </div>
-          <div className='login__container__row'>
-            <div className='login__container__row__desc'>New password</div>
-            <input
-              name='password'
-              type='password'
-              className='login__container__row__input'
-              onChange={this.inputChange}
-            />
-            {passwordFlag && <span className='login__container__row__error'>Password is not valid!</span>}
-          </div>
-          <div className='login__container__row'>
-            <div className='login__container__row__desc'>Repeat password</div>
-            <input
-              name='repeatPassword'
-              type='password'
-              className='login__container__row__input'
-              onChange={this.inputChange}
-            />
-            {repeatPasswordFlag && (
-              <span className='login__container__row__error'>Password is not valid or does not match!</span>
-            )}
-          </div>
-
-          <Button onClick={this.handleCLick} className='login__container__btn btn'>
-            Change
-          </Button>
+  return (
+    <div className='login'>
+      <div className='login__container'>
+        <div className='login__container__title'>Change password</div>
+        <div className='login__container__row'>
+          <span className='login__container__row__desc'>Email</span>
+          <input readOnly type='email' placeholder={email} className='login__container__row__input' />
         </div>
-      </div>
-    );
-  }
-}
-PasswordChange.propTypes = {
-  userData: PropTypes.objectOf(PropTypes.any).isRequired,
-  history: PropTypes.objectOf(PropTypes.any).isRequired,
-};
+        <div className='login__container__row'>
+          <div className='login__container__row__desc'>New password</div>
+          <input name='password' type='password' className='login__container__row__input' onChange={inputChange} />
+          {passwordFlag && <span className='login__container__row__error'>Password is not valid!</span>}
+        </div>
+        <div className='login__container__row'>
+          <div className='login__container__row__desc'>Repeat password</div>
+          <input
+            name='repeatPassword'
+            type='password'
+            className='login__container__row__input'
+            onChange={inputChange}
+          />
+          {repeatPasswordFlag && (
+            <span className='login__container__row__error'>Password is not valid or does not match!</span>
+          )}
+        </div>
 
-export default withRouter(PasswordChange);
+        <Button onClick={handleCLick} className='login__container__btn btn'>
+          Change
+        </Button>
+      </div>
+    </div>
+  );
+};

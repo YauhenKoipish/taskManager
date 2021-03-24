@@ -10,6 +10,7 @@ $deepBlue: #1795ff;
 }
 .loader-title {
   color: transparent;
+  position: absolute;
 }
 .loader {
   width: var(--container-size);
@@ -38,7 +39,7 @@ $deepBlue: #1795ff;
       right: 0;
       background-color: $lightBlue;
       border-radius: var(--box-border-radius);
-      box-shadow: 0px 0px 10px 0px rgba($middleBlue, 0.4);
+      box-shadow: 0 0 10px 0 rgba($middleBlue, 0.4);
     }
 
     &:nth-child(1) {

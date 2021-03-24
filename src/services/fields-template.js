@@ -1,8 +1,12 @@
 import membersImg from '../components/SideBar/style/members.png';
 import tasksImg from '../components/SideBar/style/tasks.png';
 
+export const MEMBER = 'MEMBER';
+export const ADMIN = 'ADMIN';
+export const MENTOR = 'MENTOR';
+
 export const memberFormDirectionsList = ['Java', '.Net', 'PHP', 'Frontend'];
-export const memberFormRolesList = ['ADMIN', 'MENTOR', 'MEMBER'];
+export const memberFormRolesList = [ADMIN, MENTOR, MEMBER];
 
 export const memberProgressFields = [
   ['name', 'Tasks'],

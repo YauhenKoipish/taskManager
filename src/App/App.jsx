@@ -1,141 +1,81 @@
-/* eslint-disable react/destructuring-assignment */
-import { Component } from 'react';
-import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useSelector, useDispatch } from 'react-redux';
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Switch, Redirect } from 'react-router-dom';
 import './App.module.scss';
 import { Members } from '../pages/Members';
 import { MemberProgress } from '../pages/MemberProgress';
-import { MemberTasks } from '../pages/MemberTasks';
 import { Tasks } from '../pages/Tasks';
+import { MemberTasks } from '../pages/MemberTasks';
 import { TaskTracks } from '../pages/TaskTracks';
 import { Loader } from '../components/Loader/Loader';
 import { Login } from '../pages/Login';
-import PasswordChange from '../pages/PasswordChange';
+import { PasswordChange } from '../pages/PasswordChange';
 import PrivateRoute from '../components/PrivateRoute/PrivateRoute';
-import { getUserData } from '../store/actions/app';
+import { getUserData, unsubscribeData } from '../store/actions/app';
+import { MEMBER } from '../services/fields-template';
+import { useTheme } from '../hooks/useTheme';
 
-class App extends Component {
-  componentDidMount() {
-    this.props.getUserData();
-  }
+export const App = () => {
+  const {
+    app: { userData, isVerified, isDataLoad, isAuth },
+  } = useSelector((state) => state);
+  const { theme, changeTheme } = useTheme();
 
-  render() {
-    const { isAuth, isDataLoad, userData, isVerified } = this.props;
-    console.log(this.props);
+  const dispatch = useDispatch();
 
-    let routes = (
+  useEffect(() => {
+    dispatch(getUserData());
+    changeTheme(userData.theme);
+
+    return () => {
+      dispatch(unsubscribeData());
+    };
+  }, [dispatch, userData.theme]);
+
+  let routes = (
+    <Switch>
+      <PrivateRoute condition={isAuth} component={Members} path='/members' exact />
+      <PrivateRoute condition={isAuth} component={MemberProgress} path='/member/:userId/progress' exact />
+      <PrivateRoute condition={isAuth} component={MemberTasks} path='/member/:userId/tasks' exact />
+      <PrivateRoute condition={isAuth} component={Tasks} path='/tasks' exact />
+      <PrivateRoute
+        condition={isAuth && !isVerified}
+        component={PasswordChange}
+        path='/password-change'
+        redirectPath='/members'
+        exact
+      />
+      {isAuth ? <Redirect to='/password-change' /> : <Route path='/' component={Login} />}
+    </Switch>
+  );
+
+  if (userData.role === MEMBER) {
+    routes = (
       <Switch>
-        <PrivateRoute
-          condition={isAuth}
-          userData={userData}
-          // membersData={membersData}
-          component={Members}
-          user
-          path='/members'
-          redirectPath='/'
-          exact
-        />
-        <PrivateRoute
-          condition={isAuth}
-          userData={userData}
-          component={MemberProgress}
-          path='/member/:userId/progress'
-          redirectPath='/'
-          exact
-        />
-        <PrivateRoute
-          condition={isAuth}
-          userData={userData}
-          component={MemberTasks}
-          path='/member/:userId/tasks'
-          redirectPath='/'
-          exact
-        />
-        <PrivateRoute
-          condition={isAuth}
-          userData={userData}
-          // tasksData={tasksData}
-          // membersData={membersData}
-          component={Tasks}
-          path='/tasks'
-          redirectPath='/'
-          exact
-        />
+        <PrivateRoute condition={isAuth} component={MemberTasks} path='/member/:userId/tasks' exact />
+        <PrivateRoute condition={isAuth} component={TaskTracks} path='/member/:userId/tasks/:taskId/track' exact />
         <PrivateRoute
           condition={isAuth && !isVerified}
-          userData={userData}
-          // tasksData={tasksData}
           component={PasswordChange}
           path='/password-change'
-          redirectPath='/members'
+          redirectPath={`/member/${userData.userId}/tasks`}
           exact
         />
-        {isAuth ? <Redirect to='/password-change' /> : <Route path='/' render={(props) => <Login />} />}
+        {isAuth ? <Redirect to='/password-change' /> : <Route path='/' component={Login} />}
       </Switch>
     );
-
-    if (userData.role === 'MEMBER') {
-      routes = (
-        <Switch>
-          <PrivateRoute
-            condition={isAuth}
-            userData={userData}
-            component={MemberTasks}
-            path='/member/:userId/tasks'
-            redirectPath='/'
-            exact
-          />
-          <PrivateRoute
-            condition={isAuth}
-            userData={userData}
-            // tasksData={tasksData}
-            component={TaskTracks}
-            path='/member/:userId/tasks/:taskId/track'
-            redirectPath='/'
-            exact
-          />
-          <PrivateRoute
-            condition={isAuth && !isVerified}
-            userData={userData}
-            // tasksData={tasksData}
-            component={PasswordChange}
-            path='/password-change'
-            redirectPath={`/member/${userData.userId}/tasks`}
-            exact
-          />
-          {isAuth ? <Redirect to='/password-change' /> : <Route path='/' render={(props) => <Login />} />}
-        </Switch>
-      );
-    }
-
-    return <>{isDataLoad ? <Router>{routes}</Router> : <Loader />}</>;
   }
-}
 
-function mapStateToProps(state) {
-  return {
-    isAuth: state.app.isAuth,
-    isDataLoad: state.app.isDataLoad,
-    userData: state.app.userData,
-    membersData: state.app.membersData,
-    tasksData: state.app.tasksData,
-    isVerified: state.app.isVerified,
-  };
-}
-
-function mapDispatchToProps(dispatch) {
-  return {
-    getUserData: () => dispatch(getUserData()),
-  };
-}
-
-App.propTypes = {
-  getUserData: PropTypes.func.isRequired,
-  isAuth: PropTypes.bool.isRequired,
-  isDataLoad: PropTypes.bool.isRequired,
-  isVerified: PropTypes.bool.isRequired,
-  userData: PropTypes.objectOf(PropTypes.any).isRequired,
+  return (
+    <>
+      {isDataLoad ? (
+        <Router>
+          <div className={`theme theme-${theme}`}>{routes}</div>
+        </Router>
+      ) : (
+        <Loader />
+      )}
+    </>
+  );
 };
-
-export default connect(mapStateToProps, mapDispatchToProps)(App);

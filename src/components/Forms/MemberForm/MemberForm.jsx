@@ -1,306 +1,263 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
-import { Component } from 'react';
+import { useSelector } from 'react-redux';
+import { useEffect, useState, useReducer } from 'react';
 import { Button } from '../../Buttons/Button/Button';
-import { registerUser, setUserData, setUserValidation } from '../../../services/services';
+import {
+  phoneMask,
+  registerUser,
+  setUserData,
+  setUserValidation,
+  textMask,
+  mailMask,
+  ageMask,
+  scoreMask,
+} from '../../../services/services';
 import { createFullName } from '../../../services/createFullName';
 import SelectControl from '../components/SelectControl/SelectControl';
+import LabelControl from '../components/LabelControl/LabelControl';
 import { memberFormRolesList, memberFormDirectionsList } from '../../../services/fields-template';
+import { memberFormReducer } from './memberFormReducer';
+import { setMemberData, setuserId, setInputChange } from './memberFormActions';
 
-export class MemberForm extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      name: '',
-      lastName: '',
-      direction: '',
-      email: '',
-      sex: '',
-      education: '',
-      age: '',
-      universityAverageScore: '',
-      mathScore: '',
-      address: '',
-      mobilePhone: '',
-      skype: '',
-      startDate: '',
-      role: '',
-      password: '12345678',
-      validated: false,
-      userId: '',
-    };
-    this.submitForm = this.submitForm.bind(this);
-    this.inputChange = this.inputChange.bind(this);
-    this.handleClickBackToGrid = this.handleClickBackToGrid.bind(this);
-  }
+const initialState = {
+  name: '',
+  lastName: '',
+  direction: '',
+  email: '',
+  sex: '',
+  education: '',
+  age: '',
+  universityAverageScore: '',
+  mathScore: '',
+  address: '',
+  mobilePhone: '',
+  skype: '',
+  startDate: '',
+  role: '',
+  theme: 'default',
+  password: '12345678',
+  userId: '',
+};
 
-  componentDidMount() {
-    const { memberData } = this.props;
+export const MemberForm = ({ handleClickShowMemberForm, handleClickClearMemberData }) => {
+  const [data, dispatch] = useReducer(memberFormReducer, initialState, () => initialState);
+  const [validated, setValidated] = useState(false);
+  const [isRegisterUser, setIsRegisterUser] = useState(false);
 
+  const {
+    members: { memberData, isEditMode, isReadOnly },
+  } = useSelector((state) => state);
+
+  useEffect(() => {
     if (memberData) {
-      const {
-        name,
-        lastName,
-        direction,
-        email,
-        sex,
-        education,
-        age,
-        universityAverageScore,
-        mathScore,
-        address,
-        mobilePhone,
-        skype,
-        startDate,
-        validated,
-        role,
-        userId,
-      } = memberData;
-
-      this.setState({
-        name,
-        lastName,
-        direction,
-        email,
-        sex,
-        education,
-        age,
-        universityAverageScore,
-        mathScore,
-        address,
-        mobilePhone,
-        skype,
-        startDate,
-        validated,
-        role,
-        userId,
-      });
+      dispatch(setMemberData(memberData));
+      setValidated(true);
     }
-  }
+  }, [memberData]);
 
-  handleClickBackToGrid() {
-    const { handleClickShowMemberForm, handleClickClearMemberData } = this.props;
+  useEffect(() => {
+    if (isRegisterUser) {
+      setUserData(data);
+      setUserValidation(data.userId, isEditMode);
+      handleClickBackToGrid();
+    }
+  }, [isRegisterUser]);
+
+  const handleClickBackToGrid = () => {
     handleClickClearMemberData();
     handleClickShowMemberForm();
-  }
+  };
 
-  async submitForm(event) {
-    const { email, password, name, lastName } = this.state;
-    const { isEditMode, memberData, handleClickShowMemberForm } = this.props;
+  const submitForm = async (event) => {
     const { currentTarget } = event;
+    const { email, password, name, lastName } = data;
 
     event.preventDefault();
-    this.setState({ validated: true });
-    if (currentTarget.checkValidity() === true) {
+    setValidated(true);
+
+    if (currentTarget.checkValidity()) {
       const fullName = createFullName(name, lastName);
       const userId = isEditMode ? memberData.userId : await registerUser(email, password, fullName, false);
 
       if (userId) {
-        this.setState({ userId });
-        setUserData(userId, this.state);
-        setUserValidation(userId, isEditMode);
+        dispatch(setuserId(userId));
+        setIsRegisterUser(true);
       }
-
-      handleClickShowMemberForm();
     }
-  }
+  };
 
-  inputChange(event) {
+  const inputChange = (event) => {
     const { id, value } = event.target;
-    this.setState({ [id]: value });
-  }
 
-  render() {
-    const {
-      name,
-      lastName,
-      direction,
-      email,
-      sex,
-      education,
-      age,
-      universityAverageScore,
-      mathScore,
-      address,
-      mobilePhone,
-      skype,
-      startDate,
-      validated,
-      role,
-    } = this.state;
-    const { isReadOnly, isEditMode, memberData } = this.props;
-    const formTitle =
-      isReadOnly || isEditMode ? `Member -${createFullName(memberData.name, memberData.lastName)}` : 'Add member';
+    dispatch(setInputChange(id, value));
+  };
 
-    return (
-      <div className='memberForm form'>
-        <div className='memberForm__container form__container'>
-          <div className='memberForm__container__title form__container__title'>{formTitle}</div>
+  const {
+    name,
+    lastName,
+    direction,
+    email,
+    sex,
+    education,
+    age,
+    universityAverageScore,
+    mathScore,
+    address,
+    mobilePhone,
+    skype,
+    startDate,
+    role,
+  } = data;
+  const formTitle =
+    isReadOnly || isEditMode ? `Member -${createFullName(memberData.name, memberData.lastName)}` : 'Add member';
 
-          <Form noValidate validated={validated} onSubmit={this.submitForm}>
-            <Form.Group controlId='name'>
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='text'
-                defaultValue={name}
-              />
-            </Form.Group>
-            <Form.Group controlId='lastName'>
-              <Form.Label>Last name</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='text'
-                defaultValue={lastName}
-              />
-            </Form.Group>
-            <Form.Group controlId='direction'>
-              <Form.Label>Direction</Form.Label>
+  return (
+    <div className='memberForm form'>
+      <div className='memberForm__container form__container'>
+        <div className='memberForm__container__title form__container__title'>{formTitle}</div>
 
-              <SelectControl
-                readOnly={isReadOnly}
-                array={memberFormDirectionsList}
-                defaultValue={direction}
-                onChangeFunc={this.inputChange}
-              />
-            </Form.Group>
-            <Form.Group controlId='role'>
-              <Form.Label>Role</Form.Label>
-              <SelectControl
-                readOnly={isReadOnly}
-                array={memberFormRolesList}
-                defaultValue={role}
-                onChangeFunc={this.inputChange}
-              />
-            </Form.Group>
-            <Form.Group controlId='email'>
-              <Form.Label>Email</Form.Label>
-              <Form.Control
-                readOnly={isEditMode || isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='email'
-                defaultValue={email}
-              />
-            </Form.Group>
-            <Form.Group controlId='sex'>
-              <Form.Label>Sex</Form.Label>
-              <SelectControl
-                readOnly={isReadOnly}
-                array={['Male', 'Famale']}
-                defaultValue={sex}
-                onChangeFunc={this.inputChange}
-              />
-            </Form.Group>
-            <Form.Group controlId='education'>
-              <Form.Label>Education</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='text'
-                defaultValue={education}
-              />
-            </Form.Group>
-            <Form.Group controlId='age'>
-              <Form.Label>Age</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='number'
-                defaultValue={age}
-              />
-            </Form.Group>
-            <Form.Group controlId='universityAverageScore'>
-              <Form.Label>University average score</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='number'
-                defaultValue={universityAverageScore}
-              />
-            </Form.Group>
-            <Form.Group controlId='mathScore'>
-              <Form.Label>Math score</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='number'
-                defaultValue={mathScore}
-              />
-            </Form.Group>
-            <Form.Group controlId='address'>
-              <Form.Label>Address</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='text'
-                defaultValue={address}
-              />
-            </Form.Group>
-            <Form.Group controlId='mobilePhone'>
-              <Form.Label>Mobile phone</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='tel'
-                defaultValue={mobilePhone}
-              />
-            </Form.Group>
-            <Form.Group controlId='skype'>
-              <Form.Label>Skype</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='email'
-                defaultValue={skype}
-              />
-            </Form.Group>
-            <Form.Group controlId='startDate'>
-              <Form.Label>startDate</Form.Label>
-              <Form.Control
-                readOnly={isReadOnly}
-                onChange={this.inputChange}
-                required
-                type='date'
-                defaultValue={startDate}
-              />
-            </Form.Group>
-            <div className='memberForm__container__row'>
-              {!isReadOnly && (
-                <Button type='submit' className='btn btn-green '>
-                  Save
-                </Button>
-              )}
-              <Button onClick={this.handleClickBackToGrid} className='btn btn-white '>
-                Back to grid
+        <Form noValidate validated={validated} onSubmit={submitForm}>
+          <LabelControl
+            controlId='name'
+            labelText='Name'
+            feedbackText='Is incorected name'
+            readOnly={isReadOnly}
+            onChangeFunc={inputChange}
+            defaultValue={name}
+            {...textMask}
+          />
+          <LabelControl
+            controlId='lastName'
+            labelText='Last name'
+            feedbackText='Is incorected last name'
+            readOnly={isReadOnly}
+            onChangeFunc={inputChange}
+            defaultValue={lastName}
+            {...textMask}
+          />
+          <Form.Group controlId='direction'>
+            <Form.Label>Direction</Form.Label>
+            <SelectControl
+              readOnly={isReadOnly}
+              array={memberFormDirectionsList}
+              defaultValue={direction}
+              onChangeFunc={inputChange}
+            />
+          </Form.Group>
+          <Form.Group controlId='role'>
+            <Form.Label>Role</Form.Label>
+            <SelectControl
+              readOnly={isReadOnly}
+              array={memberFormRolesList}
+              defaultValue={role}
+              onChangeFunc={inputChange}
+            />
+          </Form.Group>
+          <LabelControl
+            controlId='email'
+            labelText='Email'
+            feedbackText='Is incorected Email'
+            readOnly={isEditMode || isReadOnly}
+            onChangeFunc={inputChange}
+            type='email'
+            defaultValue={email}
+            {...mailMask}
+          />
+          <Form.Group controlId='sex'>
+            <Form.Label>Sex</Form.Label>
+            <SelectControl
+              readOnly={isReadOnly}
+              array={['Male', 'Famale']}
+              defaultValue={sex}
+              onChangeFunc={inputChange}
+            />
+          </Form.Group>
+          <LabelControl
+            controlId='education'
+            labelText='Education'
+            feedbackText='Is incorected value'
+            readOnly={isReadOnly}
+            onChangeFunc={inputChange}
+            defaultValue={education}
+            {...textMask}
+          />
+          <LabelControl
+            controlId='age'
+            labelText='Age'
+            feedbackText='Is incorected age must be 18-99'
+            readOnly={isReadOnly}
+            onChangeFunc={inputChange}
+            type='number'
+            defaultValue={age}
+            {...ageMask}
+          />
+          <LabelControl
+            controlId='universityAverageScore'
+            labelText='University average score'
+            feedbackText='Is incorected score must be 1-100'
+            readOnly={isReadOnly}
+            onChangeFunc={inputChange}
+            type='number'
+            defaultValue={universityAverageScore}
+            {...scoreMask}
+          />
+          <LabelControl
+            controlId='mathScore'
+            labelText='Math score'
+            feedbackText='Is incorected score must be 1-100'
+            readOnly={isReadOnly}
+            onChangeFunc={inputChange}
+            type='number'
+            defaultValue={mathScore}
+            {...scoreMask}
+          />
+          <Form.Group controlId='address'>
+            <Form.Label>Address</Form.Label>
+            <Form.Control readOnly={isReadOnly} onChange={inputChange} required type='text' defaultValue={address} />
+          </Form.Group>
+          <LabelControl
+            controlId='mobilePhone'
+            labelText='Mobile phone'
+            feedbackText='Is incorected phone number'
+            readOnly={isReadOnly}
+            onChangeFunc={inputChange}
+            type='tel'
+            defaultValue={mobilePhone}
+            {...phoneMask}
+          />
+          <LabelControl
+            controlId='skype'
+            labelText='Skype'
+            feedbackText='Is incorected skype email'
+            readOnly={isReadOnly}
+            onChangeFunc={inputChange}
+            type='email'
+            defaultValue={skype}
+            {...mailMask}
+          />
+          <Form.Group controlId='startDate'>
+            <Form.Label>startDate</Form.Label>
+            <Form.Control readOnly={isReadOnly} onChange={inputChange} required type='date' defaultValue={startDate} />
+          </Form.Group>
+          <div className='memberForm__container__row'>
+            {!isReadOnly && (
+              <Button type='submit' className='btn btn-green '>
+                Save
               </Button>
-            </div>
-          </Form>
-        </div>
+            )}
+            <Button onClick={handleClickBackToGrid} className='btn btn-white '>
+              Back to grid
+            </Button>
+          </div>
+        </Form>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
 
 MemberForm.propTypes = {
   handleClickShowMemberForm: PropTypes.func.isRequired,
   handleClickClearMemberData: PropTypes.func.isRequired,
-  memberData: PropTypes.objectOf(PropTypes.any),
-  isReadOnly: PropTypes.bool.isRequired,
-  isEditMode: PropTypes.bool.isRequired,
-};
-
-MemberForm.defaultProps = {
-  memberData: null,
 };

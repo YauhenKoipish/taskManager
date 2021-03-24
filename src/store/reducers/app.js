@@ -1,10 +1,19 @@
-import { APP_WRITE_USER_DATA, APP_IS_NOT_AUTH } from '../actions/actionTypes';
+import {
+  APP_WRITE_USER_DATA,
+  APP_IS_NOT_AUTH,
+  APP_WRITE_TABLE_DATA,
+  APP_SET_UNSUB_DATA,
+  APP_TRACK_UNSUB,
+} from '../actions/actionTypes';
 
 const initialState = {
   isAuth: false,
   isDataLoad: false,
   userData: {},
   isVerified: false,
+  tasksData: [],
+  membersData: [],
+  unsubscribe: () => {},
 };
 
 export default function appReducer(state = initialState, action) {
@@ -16,6 +25,11 @@ export default function appReducer(state = initialState, action) {
         isAuth: true,
         isDataLoad: true,
       };
+    case APP_WRITE_TABLE_DATA:
+      return {
+        ...state,
+        ...action.payload,
+      };
 
     case APP_IS_NOT_AUTH:
       return {
@@ -23,6 +37,17 @@ export default function appReducer(state = initialState, action) {
         isAuth: false,
         isDataLoad: true,
       };
+
+    case APP_SET_UNSUB_DATA:
+      return {
+        ...state,
+        ...action.payload,
+      };
+
+    case APP_TRACK_UNSUB:
+      state.unsubscribe();
+
+      return state;
 
     default:
       return state;

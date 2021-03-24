@@ -1,12 +1,13 @@
 import PropTypes from 'prop-types';
 import Form from 'react-bootstrap/Form';
+import { connect } from 'react-redux';
 import { Row, Col } from 'react-bootstrap';
-import { Component } from 'react';
+import { PureComponent } from 'react';
 import { Button } from '../../Buttons/Button/Button';
 import { setTaskData, getRandomId } from '../../../services/services';
 import { createFullName } from '../../../services/createFullName';
 
-export class TaskForm extends Component {
+class TaskForm extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
@@ -62,7 +63,7 @@ export class TaskForm extends Component {
   }
 
   async submitForm(event) {
-    const { isEditMode, taskData, handleClickShowTaskForm } = this.props;
+    const { isEditMode, taskData } = this.props;
     const { currentTarget } = event;
 
     event.preventDefault();
@@ -71,7 +72,7 @@ export class TaskForm extends Component {
       const taskId = isEditMode ? taskData.taskId : getRandomId();
       this.setState({ taskId }, () => {
         setTaskData(this.state);
-        handleClickShowTaskForm();
+        this.handleClickBackToGrid();
       });
     }
   }
@@ -182,13 +183,30 @@ export class TaskForm extends Component {
 TaskForm.propTypes = {
   handleClickShowTaskForm: PropTypes.func.isRequired,
   handleClickClearTasksData: PropTypes.func.isRequired,
-  taskData: PropTypes.objectOf(PropTypes.any),
-  membersData: PropTypes.arrayOf(PropTypes.any),
+  taskData: PropTypes.shape({
+    description: PropTypes.string,
+    startDate: PropTypes.string,
+    deadlineDate: PropTypes.string,
+    name: PropTypes.string,
+    members: PropTypes.objectOf(PropTypes.bool),
+    taskId: PropTypes.string,
+  }),
+  membersData: PropTypes.arrayOf(PropTypes.object).isRequired,
   isReadOnly: PropTypes.bool.isRequired,
   isEditMode: PropTypes.bool.isRequired,
 };
 
 TaskForm.defaultProps = {
   taskData: null,
-  membersData: null,
 };
+
+function mapStateToProps({ tasks: { taskData, isEditMode, isReadOnly }, app: { membersData } }) {
+  return {
+    taskData,
+    isEditMode,
+    isReadOnly,
+    membersData,
+  };
+}
+
+export default connect(mapStateToProps)(TaskForm);

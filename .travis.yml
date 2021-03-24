@@ -4,11 +4,6 @@ node_js:
   - lts/*
 os:
   - linux
-# rebuild the node_modules directory only if the yarn.lock changes
-cache:
-  yarn: true
-  directories:
-    - node_modules
 
 branches:
   - main
@@ -25,24 +20,24 @@ notifications:
 jobs:
   include:
     - stage: install dependeincies
-      install: yarn --frozen-lockfile
+      install: npm i
       skip_cleanup: true
     - stage: test
-      script: yarn test:coverage:ci:codecov
+      script: npm run test:coverage:ci:codecov
       skip_cleanup: true
     - stage: release
       before_deploy:
-        - yarn add global netlify-cli
-        - yarn build
+        - npm i netlify-cli -g
+        - npm run build
       deploy:
         provider: script
         edge: true
         skip_cleanup: true
         script:
           - netlify deploy --prod --dir=build
-          - npx semantic-release
         on:
           branch: main
+      after_success:
+        - bash <(curl -s https://codecov.io/bash)
+        - npm run semantic-release
 
-after_success:
-  - bash <(curl -s https://codecov.io/bash)

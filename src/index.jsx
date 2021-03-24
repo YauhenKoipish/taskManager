@@ -5,9 +5,10 @@ import './index.scss';
 import { createStore, compose, applyMiddleware } from 'redux';
 import { Provider } from 'react-redux';
 import thunk from 'redux-thunk';
-import App from './App/App';
+import { App } from './App/App';
 import reportWebVitals from './reportWebVitals';
 import rootReducer from './store/reducers/rootReducer';
+import { ThemeProvider } from './components/ThemeProvider/ThemeProvider';
 
 const composeEnhancers =
   typeof window === 'object' && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
@@ -17,13 +18,15 @@ const composeEnhancers =
 const store = createStore(rootReducer, composeEnhancers(applyMiddleware(thunk)));
 
 ReactDOM.render(
-  <Provider store={store}>
-    <React.StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
-    </React.StrictMode>
-  </Provider>,
+  <ThemeProvider intitialTheme='default'>
+    <Provider store={store}>
+      <React.StrictMode>
+        <BrowserRouter>
+          <App />
+        </BrowserRouter>
+      </React.StrictMode>
+    </Provider>
+  </ThemeProvider>,
   document.getElementById('root'),
 );
 

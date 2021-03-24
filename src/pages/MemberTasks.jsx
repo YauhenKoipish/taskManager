@@ -1,5 +1,7 @@
-import PropTypes from 'prop-types';
-import { Component } from 'react';
+/* eslint-disable react/jsx-wrap-multilines */
+import { useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { Footer } from '../components/Footer/Footer';
 import { Button } from '../components/Buttons/Button/Button';
 import { TableLine } from '../components/TableLine/TableLine';
@@ -7,71 +9,38 @@ import { TableNav } from '../components/TableNav/TableNav';
 import { Header } from '../components/Header/Header';
 import EmptyData from '../components/EmptyData/EmptyData';
 import { SideBar } from '../components/SideBar/SideBar';
-import { memberTasksFields } from '../services/fields-template';
-import { TaskTrackForm } from '../components/Forms/TaskTrackForm/TaskTrackForm';
-import { getTasksDataById, getUserById, changeTaskStatus } from '../services/services';
+import { MEMBER, memberTasksFields } from '../services/fields-template';
+import TaskTrackForm from '../components/Forms/TaskTrackForm/TaskTrackForm';
 import { Loader } from '../components/Loader/Loader';
+import { getTasksData, changeStatus, showForm, setTaskData } from '../store/actions/memberTasks';
 
-export class MemberTasks extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      tasksTrackFormActive: false,
-      taskId: '',
-      taskName: '',
-      tasksData: [],
-      isDataLoad: false,
-      isDataEmpty: false,
-      selectedUser: {},
-    };
-    this.getPageData = this.getPageData.bind(this);
-    this.handleCLickChangeStatus = this.handleCLickChangeStatus.bind(this);
-  }
+export const MemberTasks = () => {
+  const {
+    memberTasks: { tasksData, taskId: choceTaskId, tasksTrackFormActive, isDataLoad, selectedUser },
+    app: { userData },
+  } = useSelector((state) => state);
+  const dispatch = useDispatch();
 
-  async componentDidMount() {
-    const {
-      computedMatch: {
-        params: { userId },
-      },
-    } = this.props;
+  const { userId } = useParams();
 
-    const tasksData = await getTasksDataById(userId);
-    const selectedUser = await getUserById(userId);
-    if (tasksData) {
-      this.setState((prevState) => {
-        const isDataEmpty = tasksData[0];
-        const isDataLoad = true;
-
-        return { ...prevState, tasksData, isDataEmpty, isDataLoad };
-      });
+  useEffect(() => {
+    if (userId) {
+      dispatch(getTasksData(userId));
     }
-    if (selectedUser) {
-      this.setState({ selectedUser });
-    }
-  }
+  }, [dispatch, userId]);
 
-  handleCLickChangeStatus = (userId, taskId, status) => async () => {
-    await changeTaskStatus(userId, taskId, status)();
-    const tasksData = await getTasksDataById(userId);
-    this.setState({ tasksData });
+  const handleClickShowTaskTrackForm = (taskId, taskName) => () => {
+    dispatch(setTaskData(taskId, taskName));
+    dispatch(showForm());
   };
 
-  handleClickShowTaskTrackForm = (taskId, taskName) => () => {
-    const { tasksTrackFormActive } = this.state;
-    this.setState({ tasksTrackFormActive: !tasksTrackFormActive, taskId, taskName });
+  const handleClickCloseTaskTrackForm = () => {
+    dispatch(showForm());
   };
 
-  getPageData() {
-    const { tasksData, isDataEmpty, isDataLoad } = this.state;
-    const {
-      userData,
-      computedMatch: {
-        params: { userId },
-      },
-    } = this.props;
-
+  const getPageData = () => {
     if (isDataLoad) {
-      if (isDataEmpty) {
+      if (tasksData.length) {
         return tasksData.map(({ name, membersStatus, taskId, taskName, startDate, deadlineDate }, index) => (
           <TableLine
             key={taskId}
@@ -80,26 +49,23 @@ export class MemberTasks extends Component {
             start={startDate}
             deadLine={deadlineDate}
             status={membersStatus[userId]}
-            isButtonLink={userData.role === 'MEMBER'}
+            isButtonLink={userData.role === MEMBER}
             path={`/${taskId}/track`}
             btnTask={
               <>
-                {userData.role === 'MEMBER' ? (
-                  <Button onClick={this.handleClickShowTaskTrackForm(taskId, taskName)} className='btn btn-line '>
+                {userData.role === MEMBER ? (
+                  <Button onClick={handleClickShowTaskTrackForm(taskId, taskName)} className='btn btn-line '>
                     Track
                   </Button>
                 ) : (
                   <>
                     <Button
-                      onClick={this.handleCLickChangeStatus(userId, taskId, 'Success')}
+                      onClick={dispatch(changeStatus(userId, taskId, 'Success'))}
                       className='btn btn-line btn-green'
                     >
                       Success
                     </Button>
-                    <Button
-                      onClick={this.handleCLickChangeStatus(userId, taskId, 'Fail')}
-                      className='btn btn-line btn-red'
-                    >
+                    <Button onClick={dispatch(changeStatus(userId, taskId, 'Fail'))} className='btn btn-line btn-red'>
                       Fail
                     </Button>
                   </>
@@ -109,48 +75,30 @@ export class MemberTasks extends Component {
           />
         ));
       }
+
       return <EmptyData />;
     }
+
     return <Loader />;
-  }
+  };
 
-  render() {
-    const { selectedUser, tasksTrackFormActive, taskId, taskName } = this.state;
-    const {
-      userData,
-      computedMatch: {
-        params: { userId },
-      },
-    } = this.props;
-
-    return (
-      <div className='membersTasks wrapper'>
-        <SideBar />
-        <div className='membersTasks__container'>
-          <Header userData={userData} />
-          <div className='membersTasks__container__title'>
-            <span className='memberProgress__container__title'>{`It's ${selectedUser.name} tasks:`}</span>
-          </div>
-          <div className='membersTasks__container__nav'>
-            <TableNav tableNavigationFields={memberTasksFields} />
-          </div>
-          <div className='membersTasks__container__table'>{this.getPageData()}</div>
+  return (
+    <div className='membersTasks wrapper'>
+      <SideBar />
+      <div className='membersTasks__container'>
+        <Header />
+        <div className='membersTasks__container__title'>
+          <span className='memberProgress__container__title'>{`It's ${selectedUser.name} tasks:`}</span>
         </div>
-        <Footer />
-        {tasksTrackFormActive && (
-          <TaskTrackForm
-            userId={userId}
-            taskName={taskName}
-            taskId={taskId}
-            handleClickShowTaskTrackForm={this.handleClickShowTaskTrackForm()}
-          />
-        )}
+        <div className='membersTasks__container__nav'>
+          <TableNav tableNavigationFields={memberTasksFields} />
+        </div>
+        <div className='membersTasks__container__table'>{getPageData()}</div>
       </div>
-    );
-  }
-}
-
-MemberTasks.propTypes = {
-  userData: PropTypes.objectOf(PropTypes.any).isRequired,
-  computedMatch: PropTypes.objectOf(PropTypes.any).isRequired,
+      <Footer />
+      {tasksTrackFormActive && (
+        <TaskTrackForm userId={userId} taskId={choceTaskId} closeForm={handleClickCloseTaskTrackForm} />
+      )}
+    </div>
+  );
 };

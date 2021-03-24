@@ -29,12 +29,45 @@ code {
   }
 }
 
-//colors
-$blue: #3c97ff;
-$gray: #cccccc;
-$green: rgb(48, 201, 43);
-$red: rgb(223, 0, 0);
-$white: rgb(255, 255, 255);
+.theme {
+  height: 100%;
+
+  $colors: (
+    theme-color-1: #3c97ff,
+    theme-color-2: #cccccc,
+    theme-color-3: rgb(48, 201, 43),
+    theme-color-4: rgb(223, 0, 0),
+    theme-color-5: rgb(255, 255, 255),
+  );
+  @each $name, $color in $colors {
+    --#{$name}: #{$color};
+  }
+}
+
+@function getColor($color-name) {
+  @return var(--theme-#{$color-name});
+}
+
+.theme-dark {
+  @import './pages/style/themeColors/dark.scss';
+  @each $name, $color in $colors {
+    --#{$name}: #{$color};
+  }
+}
+
+.theme-light {
+  @import './pages/style/themeColors/light.scss';
+  @each $name, $color in $colors {
+    --#{$name}: #{$color};
+  }
+}
+
+.theme-colored {
+  @import './pages/style/themeColors/colored.scss';
+  @each $name, $color in $colors {
+    --#{$name}: #{$color};
+  }
+}
 
 @mixin flex-row {
   display: flex;
@@ -52,16 +85,16 @@ $white: rgb(255, 255, 255);
 
 @mixin nav {
   @include flex-row();
-  background-color: $blue;
-  border: 1px solid $gray;
-  color: $white;
+  background-color: getColor(color-1);
+  border: 1px solid getColor(color-2);
+  color: getColor(color-5);
   height: 40px;
 }
 
 @mixin nav_elem {
   @include flex-row();
   height: 100%;
-  border-right: 1px solid $gray;
+  border-right: 1px solid getColor(color-2);
 }
 
 @mixin container {
@@ -83,7 +116,7 @@ $white: rgb(255, 255, 255);
 
   &__container {
     position: relative;
-    background-color: $white;
+    background-color: getColor(color-5);
     width: 600px;
     height: 70vh;
     border: 1px solid black;

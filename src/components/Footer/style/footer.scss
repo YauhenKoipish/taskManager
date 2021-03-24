@@ -9,7 +9,7 @@
   &__content {
     @include flex-column();
 
-    color: $white;
+    color: getColor(color-5);
     font-size: 14px;
   }
 }

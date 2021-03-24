@@ -1,7 +1,6 @@
 {
   "hooks": {
     "pre-commit": "npx lint-staged",
-    "prepare-commit-msg": "exec < /dev/tty && yarn run cm -- --hook || true",
-    "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
+    "prepare-commit-msg": "exec < /dev/tty && yarn run cm -- --hook || true"
   }
 }
